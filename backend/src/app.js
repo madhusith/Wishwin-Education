@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
+const authRoutes = require('./routes/authRoutes');
+
 const app = express();
 
 // Security middleware
@@ -18,12 +20,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint (Section Step A3)
+// Health check endpoint (Step A3)
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
     service: 'Wishwin LMS API',
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
 
 module.exports = app;
