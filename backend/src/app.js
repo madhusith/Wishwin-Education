@@ -7,6 +7,7 @@ const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const classRoutes = require('./routes/classRoutes');
 const liveClassRoutes = require('./routes/liveClassRoutes');
+const recordedLessonRoutes = require('./routes/recordedLessonRoutes');
 
 const app = express();
 
@@ -39,5 +40,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/live-classes', liveClassRoutes);
 app.use('/api/live', liveClassRoutes);
+app.use('/api/recordings', recordedLessonRoutes);
+app.use('/api/recorded-lessons', recordedLessonRoutes);
 
 module.exports = app;

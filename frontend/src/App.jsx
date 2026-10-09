@@ -9,8 +9,10 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
+import StudentRecordingsPage from './pages/student/StudentRecordingsPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
+import TeacherRecordingsPage from './pages/teacher/TeacherRecordingsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
@@ -63,6 +65,18 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/student/recorded-lessons"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentRecordingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/recordings"
+            element={<Navigate to="/student/recorded-lessons" replace />}
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -80,6 +94,18 @@ export default function App() {
                 <TeacherLiveClassesPage />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/teacher/recorded-lessons"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherRecordingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/recordings"
+            element={<Navigate to="/teacher/recorded-lessons" replace />}
           />
 
           {/* Admin Protected Routes */}
