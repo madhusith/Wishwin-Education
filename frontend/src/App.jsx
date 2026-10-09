@@ -10,9 +10,11 @@ import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
 import StudentRecordingsPage from './pages/student/StudentRecordingsPage';
+import StudentMaterialsPage from './pages/student/StudentMaterialsPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
 import TeacherRecordingsPage from './pages/teacher/TeacherRecordingsPage';
+import TeacherMaterialsPage from './pages/teacher/TeacherMaterialsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
@@ -77,6 +79,18 @@ export default function App() {
             path="/student/recordings"
             element={<Navigate to="/student/recorded-lessons" replace />}
           />
+          <Route
+            path="/student/learning-materials"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentMaterialsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/materials"
+            element={<Navigate to="/student/learning-materials" replace />}
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -106,6 +120,18 @@ export default function App() {
           <Route
             path="/teacher/recordings"
             element={<Navigate to="/teacher/recorded-lessons" replace />}
+          />
+          <Route
+            path="/teacher/learning-materials"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherMaterialsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/materials"
+            element={<Navigate to="/teacher/learning-materials" replace />}
           />
 
           {/* Admin Protected Routes */}
