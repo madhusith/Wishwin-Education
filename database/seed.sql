@@ -32,9 +32,9 @@ ON DUPLICATE KEY UPDATE status=VALUES(status);
 
 -- Initial Announcements
 INSERT INTO announcements (id, title, message, priority, target_type, target_class_id, active, created_by) VALUES
-(1, '🔴 URGENT: Grade 5 Live Class Rescheduled', 'Today\'s Grade 5 Scholarship live revision class will commence at 6:30 PM. Please have your model question papers ready before joining.', 'URGENT', 'ALL', NULL, TRUE, 1),
-(2, '⚡ IMPORTANT: New Scholarship Model Papers Uploaded', 'New model papers and revision worksheets for Grade 4 & Grade 5 are now available in the Learning Materials section for download.', 'IMPORTANT', 'ALL', NULL, TRUE, 1),
-(3, '🏆 Online Quiz Practice Challenge is Live', 'The weekly 25-question timed scholarship MCQ quiz is open for all students. Test your knowledge and review your instant score!', 'IMPORTANT', 'ALL', NULL, TRUE, 1),
-(4, '📢 Welcome to Wishwin LMS Center', 'Welcome to the academic term. Access your live classes, recorded lessons, PDF tutorials, and interactive quizzes directly from your dashboard.', 'NORMAL', 'ALL', NULL, TRUE, 1)
+(1, 'Grade 5 Live Class Rescheduled', 'Today\'s Grade 5 Scholarship live revision class will commence at 6:30 PM. Please have your model question papers ready before joining.', 'URGENT', 'ALL', NULL, TRUE, 1),
+(2, 'New Scholarship Model Papers Uploaded', 'New model papers and revision worksheets for Grade 4 & Grade 5 are now available in the Learning Materials section for download.', 'IMPORTANT', 'ALL', NULL, TRUE, 1),
+(3, 'Online Quiz Practice Challenge is Live', 'The weekly 25-question timed scholarship MCQ quiz is open for all students. Test your knowledge and review your instant score!', 'IMPORTANT', 'ALL', NULL, TRUE, 1),
+(4, 'Welcome to Wishwin LMS Center', 'Welcome to the academic term. Access your live classes, recorded lessons, PDF tutorials, and interactive quizzes directly from your dashboard.', 'NORMAL', 'ALL', NULL, TRUE, 1)
 ON DUPLICATE KEY UPDATE title=VALUES(title), message=VALUES(message), priority=VALUES(priority);
 
