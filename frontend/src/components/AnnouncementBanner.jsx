@@ -1,5 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, Bell, ChevronLeft, ChevronRight, Megaphone, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  AlertCircle,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Megaphone,
+  X,
+  Pause,
+  Play,
+  Volume2,
+} from 'lucide-react';
 import api from '../services/api';
 
 export default function AnnouncementBanner({
@@ -11,6 +21,8 @@ export default function AnnouncementBanner({
   const [announcements, setAnnouncements] = useState(propAnnouncements || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(!propAnnouncements);
+  const [isPaused, setIsPaused] = useState(false);
+  const [slideDirection, setSlideDirection] = useState('right');
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('wishwin_dismissed_announcements') || '[]');
@@ -38,7 +50,6 @@ export default function AnnouncementBanner({
           setAnnouncements(res.data.data);
         }
       } catch (err) {
-        // Silent fail for banner - avoid crashing UI if no announcements or offline
         console.warn('Failed to load announcements banner:', err.message);
       } finally {
         if (isMounted) setLoading(false);
@@ -56,7 +67,6 @@ export default function AnnouncementBanner({
     .filter((a) => {
       if (!a.active) return false;
 
-      // Check date validity
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
@@ -72,33 +82,40 @@ export default function AnnouncementBanner({
         if (now > end) return false;
       }
 
-      // Check role/class targeting
       if (userRole && a.target_type && a.target_type !== 'ALL') {
         if (userRole === 'STUDENT' && !['STUDENTS', 'CLASS'].includes(a.target_type)) return false;
         if (userRole === 'TEACHER' && a.target_type !== 'TEACHERS') return false;
         if (userRole === 'PARENT' && a.target_type !== 'PARENTS') return false;
       }
 
-      // Urgent ones cannot be permanently dismissed
       if (a.priority === 'URGENT') return true;
-
       return !dismissedIds.includes(a.id);
     })
     .sort((a, b) => {
-      // 1. Highest priority first: URGENT > IMPORTANT > NORMAL
       const priorityWeights = { URGENT: 3, IMPORTANT: 2, NORMAL: 1 };
       const weightDiff = (priorityWeights[b.priority] || 1) - (priorityWeights[a.priority] || 1);
       if (weightDiff !== 0) return weightDiff;
-
-      // 2. Latest announcement first within same priority
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
+
+  // Automatic sliding timer (every 5 seconds, pauses on hover)
+  useEffect(() => {
+    if (activeAnnouncements.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      setSlideDirection('right');
+      setCurrentIndex((prev) => (prev + 1) % activeAnnouncements.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [activeAnnouncements.length, isPaused]);
 
   if (loading || activeAnnouncements.length === 0) {
     return null;
   }
 
-  const current = activeAnnouncements[currentIndex >= activeAnnouncements.length ? 0 : currentIndex];
+  const safeIndex = currentIndex >= activeAnnouncements.length ? 0 : currentIndex;
+  const current = activeAnnouncements[safeIndex];
   if (!current) return null;
 
   const handleDismiss = (id) => {
@@ -115,31 +132,36 @@ export default function AnnouncementBanner({
   };
 
   const nextAnnouncement = () => {
+    setSlideDirection('right');
     setCurrentIndex((prev) => (prev + 1) % activeAnnouncements.length);
   };
 
   const prevAnnouncement = () => {
+    setSlideDirection('left');
     setCurrentIndex((prev) => (prev - 1 + activeAnnouncements.length) % activeAnnouncements.length);
   };
 
-  // Priority styling
+  // Enhanced priority styles with rich gradients, glow, and elevated height
   const styleConfig = {
     URGENT: {
-      container: 'bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-md shadow-red-500/10',
-      badge: 'bg-white/20 text-white border border-white/30',
-      pulse: 'bg-white',
+      container: 'bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-xl shadow-red-500/20 border border-red-400/30',
+      badge: 'bg-white/20 text-white border border-white/30 font-black',
+      iconBox: 'bg-white/20 text-white shadow-inner',
+      accentDot: 'bg-rose-300',
       icon: AlertCircle,
     },
     IMPORTANT: {
-      container: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-md shadow-amber-500/10',
-      badge: 'bg-white/20 text-white border border-white/30',
-      pulse: 'bg-amber-100',
+      container: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-xl shadow-amber-500/20 border border-amber-300/30',
+      badge: 'bg-white/20 text-white border border-white/30 font-bold',
+      iconBox: 'bg-white/20 text-white shadow-inner',
+      accentDot: 'bg-amber-200',
       icon: Megaphone,
     },
     NORMAL: {
-      container: 'bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white shadow-md shadow-blue-500/10',
-      badge: 'bg-white/15 text-white border border-white/20',
-      pulse: 'bg-sky-300',
+      container: 'bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white shadow-xl shadow-blue-500/20 border border-blue-400/30',
+      badge: 'bg-white/15 text-white border border-white/25 font-bold',
+      iconBox: 'bg-white/15 text-white shadow-inner',
+      accentDot: 'bg-sky-300',
       icon: Bell,
     },
   };
@@ -151,66 +173,100 @@ export default function AnnouncementBanner({
     <div
       role="region"
       aria-label="Active announcements"
-      className={`relative w-full rounded-xl sm:rounded-2xl transition-all duration-300 overflow-hidden ${currentStyle.container} ${className}`}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className={`relative w-full rounded-2xl transition-all duration-300 overflow-hidden ${currentStyle.container} ${className}`}
     >
-      <div className="px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between gap-3">
-        {/* Left: Icon & Content */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="p-2 rounded-xl bg-white/15 shrink-0 backdrop-blur-xs flex items-center justify-center">
-            <CurrentIcon className="w-5 h-5 text-white animate-pulse" />
+      {/* Increased height container with generous padding (py-5 sm:py-6 px-6 sm:px-8) */}
+      <div className="px-5 py-5 sm:px-7 sm:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Left: Large Icon Badge & Elevated Content */}
+        <div className="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0 flex-1">
+          {/* Prominent Icon Box */}
+          <div className={`p-3 sm:p-3.5 rounded-2xl shrink-0 backdrop-blur-md flex items-center justify-center ${currentStyle.iconBox}`}>
+            <CurrentIcon className="w-6 h-6 text-white animate-pulse" />
           </div>
 
-          <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider ${currentStyle.badge}`}>
-                {current.priority === 'URGENT' ? '🔴 URGENT' : current.priority === 'IMPORTANT' ? '⚡ IMPORTANT' : '📢 NOTICE'}
+          {/* Animated Announcement Content */}
+          <div key={current.id} className="min-w-0 flex-1 space-y-1.5 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`text-[11px] uppercase px-2.5 py-0.5 rounded-full tracking-wider ${currentStyle.badge}`}>
+                {current.priority === 'URGENT' ? '🔴 URGENT NOTICE' : current.priority === 'IMPORTANT' ? '⚡ IMPORTANT' : '📢 NOTICE'}
               </span>
+
               {current.className && (
-                <span className="text-[11px] font-medium text-white/80 bg-black/15 px-2 py-0.5 rounded-md hidden md:inline-block">
+                <span className="text-xs font-semibold text-white/90 bg-black/20 px-2.5 py-0.5 rounded-md backdrop-blur-xs">
                   {current.className}
+                </span>
+              )}
+
+              {activeAnnouncements.length > 1 && (
+                <span className="text-[11px] font-medium text-white/75 bg-black/15 px-2 py-0.5 rounded-md hidden sm:inline-block">
+                  Auto-sliding {isPaused ? '(Paused on hover)' : ''}
                 </span>
               )}
             </div>
 
-            <div className="min-w-0 flex-1">
-              <span className="font-bold text-xs sm:text-sm text-white mr-2">
+            <div>
+              <h3 className="font-bold text-sm sm:text-base text-white leading-snug tracking-tight">
                 {current.title}
-              </span>
-              <span className="text-xs text-white/90 font-normal line-clamp-1 sm:inline">
+              </h3>
+              <p className="mt-1 text-xs sm:text-sm text-white/95 font-normal leading-relaxed max-w-4xl">
                 {current.message}
-              </span>
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Right: Controls & Dismiss */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right: Controls, Dots, & Dismiss Button */}
+        <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/15">
           {activeAnnouncements.length > 1 && (
-            <div className="flex items-center gap-1 bg-black/20 rounded-lg p-0.5 text-xs text-white/90">
-              <button
-                onClick={prevAnnouncement}
-                className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
-                aria-label="Previous announcement"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <span className="px-1.5 text-[11px] font-semibold tabular-nums select-none">
-                {currentIndex + 1}/{activeAnnouncements.length}
-              </span>
-              <button
-                onClick={nextAnnouncement}
-                className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
-                aria-label="Next announcement"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+            <div className="flex items-center gap-2">
+              {/* Pagination Dots */}
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-black/20 rounded-xl backdrop-blur-xs">
+                {activeAnnouncements.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      idx === safeIndex
+                        ? 'w-6 bg-white shadow-xs'
+                        : 'w-2 bg-white/40 hover:bg-white/70'
+                    }`}
+                    aria-label={`Jump to announcement ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              {/* Prev / Next Arrows */}
+              <div className="flex items-center gap-1 bg-black/20 rounded-xl p-1 backdrop-blur-xs text-white">
+                <button
+                  onClick={prevAnnouncement}
+                  className="p-1.5 rounded-lg hover:bg-white/20 transition focus:outline-hidden"
+                  aria-label="Previous announcement"
+                  title="Previous"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="px-1 text-xs font-bold tabular-nums select-none">
+                  {safeIndex + 1}/{activeAnnouncements.length}
+                </span>
+                <button
+                  onClick={nextAnnouncement}
+                  className="p-1.5 rounded-lg hover:bg-white/20 transition focus:outline-hidden"
+                  aria-label="Next announcement"
+                  title="Next"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
+          {/* Dismiss button (for non-urgent notices) */}
           {current.priority !== 'URGENT' && (
             <button
               onClick={() => handleDismiss(current.id)}
-              className="p-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition focus:outline-hidden"
+              className="p-2 rounded-xl hover:bg-white/20 text-white/80 hover:text-white transition focus:outline-hidden"
               aria-label="Dismiss announcement"
               title="Dismiss announcement for this session"
             >
