@@ -8,7 +8,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
+import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
@@ -53,6 +55,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/student/live-classes"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentLiveClassesPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -60,6 +70,14 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['TEACHER']}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/live-classes"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherLiveClassesPage />
               </ProtectedRoute>
             }
           />

@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const classRoutes = require('./routes/classRoutes');
+const liveClassRoutes = require('./routes/liveClassRoutes');
 
 const app = express();
 
@@ -36,5 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/classes', classRoutes);
+app.use('/api/live-classes', liveClassRoutes);
+app.use('/api/live', liveClassRoutes);
 
 module.exports = app;
