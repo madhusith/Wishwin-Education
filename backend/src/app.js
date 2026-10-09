@@ -3,6 +3,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 const authRoutes = require('./routes/authRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const classRoutes = require('./routes/classRoutes');
 
 const app = express();
 
@@ -30,5 +33,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/classes', classRoutes);
 
 module.exports = app;

@@ -10,6 +10,10 @@ import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminClassesPage from './pages/admin/AdminClassesPage';
+import AdminEnrollmentsPage from './pages/admin/AdminEnrollmentsPage';
+import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
 import ParentDashboard from './pages/parent/ParentDashboard';
 
 // Root redirect handler
@@ -66,6 +70,38 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/classes"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminClassesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/enrollments"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminEnrollmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminAnnouncementsPage />
               </ProtectedRoute>
             }
           />
