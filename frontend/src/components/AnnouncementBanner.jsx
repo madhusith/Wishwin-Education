@@ -175,14 +175,14 @@ export default function AnnouncementBanner({
       className={`relative group w-full ${className}`}
     >
       {/* Glowing small frame around the banner */}
-      <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 blur-[3px] opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none" />
+      <div className="absolute -inset-[1.5px] rounded-2xl bg-[#145dfb]/60 blur-[4px] opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none" />
 
-      {/* Main banner card: vibrant light blue with clean glowing border */}
-      <div className="relative w-full rounded-2xl bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 border border-sky-200/50 shadow-lg shadow-sky-500/25 text-white overflow-hidden transition-all duration-300">
+      {/* Main banner card: Exact #145dfb blue with glowing border frame */}
+      <div className="relative w-full rounded-2xl bg-[#145dfb] border border-blue-300/40 shadow-lg shadow-[#145dfb]/30 text-white overflow-hidden transition-all duration-300">
         <div className="px-5 py-4.5 sm:px-7 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Left: Icon & Content */}
           <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
-            {/* Soft luminous icon box */}
+            {/* Luminous icon box */}
             <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 border backdrop-blur-xs flex items-center justify-center ${currentPriority.iconBox}`}>
               <CurrentIcon className="w-5 h-5 text-white" />
             </div>
@@ -195,13 +195,13 @@ export default function AnnouncementBanner({
                 </span>
 
                 {current.className && (
-                  <span className="text-xs font-semibold text-sky-950 bg-white/40 px-2 py-0.5 rounded-md backdrop-blur-xs">
+                  <span className="text-xs font-semibold text-white bg-black/20 px-2 py-0.5 rounded-md backdrop-blur-xs">
                     {current.className}
                   </span>
                 )}
 
                 {activeAnnouncements.length > 1 && (
-                  <span className="text-[11px] font-medium text-sky-100/90 hidden sm:inline-block">
+                  <span className="text-[11px] font-medium text-blue-100/90 hidden sm:inline-block">
                     {isPaused ? '• Paused' : '• Auto-sliding'}
                   </span>
                 )}
@@ -211,7 +211,7 @@ export default function AnnouncementBanner({
                 <h3 className="font-bold text-sm sm:text-base text-white tracking-tight drop-shadow-xs">
                   {current.title}
                 </h3>
-                <p className="mt-0.5 text-xs sm:text-sm text-sky-50/95 leading-relaxed line-clamp-2 md:line-clamp-none max-w-4xl font-normal">
+                <p className="mt-0.5 text-xs sm:text-sm text-blue-50/95 leading-relaxed line-clamp-2 md:line-clamp-none max-w-4xl font-normal">
                   {current.message}
                 </p>
               </div>
