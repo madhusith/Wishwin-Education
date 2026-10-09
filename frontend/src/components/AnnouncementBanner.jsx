@@ -141,24 +141,24 @@ export default function AnnouncementBanner({
     setCurrentIndex((prev) => (prev - 1 + activeAnnouncements.length) % activeAnnouncements.length);
   };
 
-  // Simple, calm priority pill styling (no harsh backgrounds, easy on the eyes)
+  // Priority pill styling tailored for light blue background
   const priorityConfig = {
     URGENT: {
-      badge: 'bg-rose-500/20 text-rose-300 border-rose-400/30',
+      badge: 'bg-rose-500 text-white border-rose-300/40 shadow-xs',
       badgeLabel: 'URGENT',
-      iconBox: 'bg-rose-500/15 text-rose-300 border-rose-400/25',
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: AlertCircle,
     },
     IMPORTANT: {
-      badge: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
+      badge: 'bg-amber-400 text-amber-950 border-amber-200/50 shadow-xs font-bold',
       badgeLabel: 'IMPORTANT',
-      iconBox: 'bg-amber-500/15 text-amber-300 border-amber-400/25',
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: Megaphone,
     },
     NORMAL: {
-      badge: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
+      badge: 'bg-white/25 text-white border-white/35',
       badgeLabel: 'NOTICE',
-      iconBox: 'bg-blue-500/15 text-blue-300 border-blue-400/25',
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: Bell,
     },
   };
@@ -175,16 +175,16 @@ export default function AnnouncementBanner({
       className={`relative group w-full ${className}`}
     >
       {/* Glowing small frame around the banner */}
-      <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-blue-500/40 via-indigo-500/50 to-cyan-400/40 blur-[3px] opacity-75 group-hover:opacity-100 transition duration-500 pointer-events-none" />
+      <div className="absolute -inset-[1.5px] rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 blur-[3px] opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none" />
 
-      {/* Main banner card: calm, simple Wishwin navy with glowing border */}
-      <div className="relative w-full rounded-2xl bg-gradient-to-r from-[#0A1A3F] via-[#0E2456] to-[#0A1A3F] border border-blue-400/40 shadow-lg shadow-blue-950/30 text-white overflow-hidden transition-all duration-300">
+      {/* Main banner card: vibrant light blue with clean glowing border */}
+      <div className="relative w-full rounded-2xl bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 border border-sky-200/50 shadow-lg shadow-sky-500/25 text-white overflow-hidden transition-all duration-300">
         <div className="px-5 py-4.5 sm:px-7 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Left: Icon & Content */}
           <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
-            {/* Simple calm icon box */}
-            <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 border flex items-center justify-center ${currentPriority.iconBox}`}>
-              <CurrentIcon className="w-5 h-5" />
+            {/* Soft luminous icon box */}
+            <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 border backdrop-blur-xs flex items-center justify-center ${currentPriority.iconBox}`}>
+              <CurrentIcon className="w-5 h-5 text-white" />
             </div>
 
             {/* Announcement text */}
@@ -195,23 +195,23 @@ export default function AnnouncementBanner({
                 </span>
 
                 {current.className && (
-                  <span className="text-xs font-medium text-slate-300 bg-white/10 px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-semibold text-sky-950 bg-white/40 px-2 py-0.5 rounded-md backdrop-blur-xs">
                     {current.className}
                   </span>
                 )}
 
                 {activeAnnouncements.length > 1 && (
-                  <span className="text-[11px] font-normal text-slate-400 hidden sm:inline-block">
+                  <span className="text-[11px] font-medium text-sky-100/90 hidden sm:inline-block">
                     {isPaused ? '• Paused' : '• Auto-sliding'}
                   </span>
                 )}
               </div>
 
               <div>
-                <h3 className="font-semibold text-sm sm:text-base text-white tracking-tight">
+                <h3 className="font-bold text-sm sm:text-base text-white tracking-tight drop-shadow-xs">
                   {current.title}
                 </h3>
-                <p className="mt-0.5 text-xs sm:text-sm text-slate-300 leading-relaxed line-clamp-2 md:line-clamp-none max-w-4xl">
+                <p className="mt-0.5 text-xs sm:text-sm text-sky-50/95 leading-relaxed line-clamp-2 md:line-clamp-none max-w-4xl font-normal">
                   {current.message}
                 </p>
               </div>
@@ -219,19 +219,19 @@ export default function AnnouncementBanner({
           </div>
 
           {/* Right: Simple Navigation Controls */}
-          <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/10">
+          <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/20">
             {activeAnnouncements.length > 1 && (
               <div className="flex items-center gap-2.5">
                 {/* Dots indicator */}
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-black/15 rounded-lg border border-white/20 backdrop-blur-xs">
                   {activeAnnouncements.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentIndex(idx)}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         idx === safeIndex
-                          ? 'w-5 bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]'
-                          : 'w-1.5 bg-white/30 hover:bg-white/60'
+                          ? 'w-5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                          : 'w-1.5 bg-white/40 hover:bg-white/70'
                       }`}
                       aria-label={`Jump to announcement ${idx + 1}`}
                     />
@@ -239,21 +239,21 @@ export default function AnnouncementBanner({
                 </div>
 
                 {/* Prev / Next Arrows */}
-                <div className="flex items-center gap-1 bg-white/5 rounded-lg p-0.5 border border-white/10 text-slate-300">
+                <div className="flex items-center gap-1 bg-black/15 rounded-lg p-0.5 border border-white/20 text-white backdrop-blur-xs">
                   <button
                     onClick={prevAnnouncement}
-                    className="p-1 rounded hover:bg-white/15 hover:text-white transition focus:outline-hidden"
+                    className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
                     aria-label="Previous announcement"
                     title="Previous"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="px-1 text-[11px] font-medium tabular-nums select-none text-slate-400">
+                  <span className="px-1 text-[11px] font-semibold tabular-nums select-none text-white/90">
                     {safeIndex + 1}/{activeAnnouncements.length}
                   </span>
                   <button
                     onClick={nextAnnouncement}
-                    className="p-1 rounded hover:bg-white/15 hover:text-white transition focus:outline-hidden"
+                    className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
                     aria-label="Next announcement"
                     title="Next"
                   >
@@ -267,7 +267,7 @@ export default function AnnouncementBanner({
             {current.priority !== 'URGENT' && (
               <button
                 onClick={() => handleDismiss(current.id)}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition focus:outline-hidden"
+                className="p-1.5 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition focus:outline-hidden"
                 aria-label="Dismiss announcement"
                 title="Dismiss"
               >
