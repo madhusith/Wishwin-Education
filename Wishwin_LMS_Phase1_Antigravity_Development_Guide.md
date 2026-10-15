@@ -63,16 +63,14 @@ The system should be designed so future features can be added later without rebu
 
 ## 2.4 Parent
 
-For the first release, keep parent functionality minimal unless the client requests more during implementation.
-
-Minimum parent features:
-
 - Register
 - Login
-- View linked child's basic class information
-- View announcements
-
-Do not build advanced parent monitoring yet.
+- View Parent Dashboard with dedicated tabbed interface:
+  - **Tab 1: Overview & Notices**: Active class counts, live session timetable, and center announcements.
+  - **Tab 2: Student Details**: Linked child profile, student ID, enrolled grade, class details, and assigned teacher contact info.
+  - **Tab 3: Academic Status & Progress**: Real-time quiz marks, assessment scores, percentage performance, and live class attendance/join links.
+- Dedicated routes for `/parent/classes` and `/parent/announcements`.
+- `parent_students` relational mapping table.
 
 ---
 
@@ -1404,26 +1402,38 @@ Publish Announcement
 
 ---
 
-# PHASE M — Parent Dashboard
-
-Keep simple.
+# PHASE M — Parent Dashboard & Child Monitoring
 
 Route:
 
 ```text
 /parent/dashboard
+/parent/classes
+/parent/announcements
 ```
 
-Show:
+### Dashboard Tabs & Sections:
 
+1. **Tab 1 — Overview & Notices**:
+   - Real-time stat summary (Enrolled Classes, Average Quiz Marks %, Tests Done, Live Sessions)
+   - Live Session Timetable (Upcoming & Active sessions)
+   - Official Center Notices & Announcements (with priority tags)
+
+2. **Tab 2 — Student Details**:
+   - Linked child profile (Name, Student ID, Registration Date, Status, Email, Phone)
+   - Enrolled class details with academic grade and assigned teacher contact info
+
+3. **Tab 3 — Child Academic Status & Marks**:
+   - Online Quiz Marks & Assessment Results (Quiz title, class, score, percentage, date submitted)
+   - Live Class Attendance & Session Schedule (Date, time, status, and direct Join Live button for active sessions)
+
+Backend APIs:
 ```text
-Linked Child
-Class
-Schedule
-Announcements
+GET /api/parent/child-summary
+GET /api/classes
+GET /api/live-classes
+GET /api/announcements
 ```
-
-Move advanced progress/payment/gamification features to a later release.
 
 ---
 

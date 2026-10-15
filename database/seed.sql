@@ -38,3 +38,8 @@ INSERT INTO announcements (id, title, message, priority, target_type, target_cla
 (4, 'Welcome to Wishwin LMS Center', 'Welcome to the academic term. Access your live classes, recorded lessons, PDF tutorials, and interactive quizzes directly from your dashboard.', 'NORMAL', 'ALL', NULL, TRUE, 1)
 ON DUPLICATE KEY UPDATE title=VALUES(title), message=VALUES(message), priority=VALUES(priority);
 
+-- Parent-Student Mapping (Sunil Silva -> Nimal Silva)
+INSERT INTO parent_students (parent_id, student_id) VALUES
+(4, 3)
+ON DUPLICATE KEY UPDATE parent_id=VALUES(parent_id);
+

@@ -12,6 +12,8 @@ import {
   GraduationCap,
   X,
   UserCheck,
+  User,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -46,8 +48,10 @@ export default function Sidebar({ isOpen, onClose }) {
       { label: 'Announcements', path: '/student/announcements', icon: Bell },
     ],
     PARENT: [
-      { label: 'Dashboard', path: '/parent/dashboard', icon: LayoutDashboard },
-      { label: 'Child Classes', path: '/parent/classes', icon: BookOpen },
+      { label: 'Overview', path: '/parent/dashboard', icon: LayoutDashboard },
+      { label: 'Student Details', path: '/parent/student-details', icon: User },
+      { label: 'Academic Status', path: '/parent/status', icon: BarChart3 },
+      { label: 'Live Classes', path: '/parent/classes', icon: Video },
       { label: 'Announcements', path: '/parent/announcements', icon: Bell },
     ],
   };

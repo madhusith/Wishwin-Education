@@ -216,3 +216,16 @@ CREATE TABLE announcements (
     CONSTRAINT fk_announcements_class FOREIGN KEY (target_class_id) REFERENCES classes(id) ON DELETE CASCADE,
     CONSTRAINT fk_announcements_creator FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8.14 Parent Students Mapping
+CREATE TABLE IF NOT EXISTS parent_students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id INT NOT NULL,
+    student_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_parent_student (parent_id, student_id),
+    INDEX idx_parent_students_parent (parent_id),
+    INDEX idx_parent_students_student (student_id),
+    CONSTRAINT fk_ps_parent FOREIGN KEY (parent_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ps_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
