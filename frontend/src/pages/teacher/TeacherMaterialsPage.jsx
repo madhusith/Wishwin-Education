@@ -507,6 +507,15 @@ export default function TeacherMaterialsPage() {
                   href={previewMaterial.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Open in Tab
+                </a>
+                <a
+                  href={previewMaterial.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   download
                   className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-blue-700 transition"
                 >
@@ -515,7 +524,7 @@ export default function TeacherMaterialsPage() {
                 </a>
                 <button
                   onClick={() => setPreviewMaterial(null)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -523,11 +532,17 @@ export default function TeacherMaterialsPage() {
             </div>
 
             <div className="flex-1 mt-4 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-              <iframe
-                src={previewMaterial.fileUrl}
-                title={previewMaterial.title}
-                className="w-full h-full border-0"
-              />
+              <object
+                data={`${previewMaterial.fileUrl}#toolbar=1`}
+                type="application/pdf"
+                className="w-full h-full"
+              >
+                <iframe
+                  src={`${previewMaterial.fileUrl}#toolbar=1`}
+                  title={previewMaterial.title}
+                  className="w-full h-full border-0"
+                />
+              </object>
             </div>
           </div>
         </div>

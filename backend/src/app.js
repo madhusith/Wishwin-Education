@@ -16,6 +16,9 @@ const app = express();
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allows cross-origin PDF viewing
+  crossOriginEmbedderPolicy: false,
+  xFrameOptions: false, // Disables X-Frame-Options to allow frontend PDF preview iframe
+  contentSecurityPolicy: false, // Disables default CSP that blocks iframe embedding
 }));
 
 // CORS configuration
@@ -30,7 +33,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static uploads locally for dev mode
-app.use('/uploads', express.static(require('path').join(__dirname, '../uploads')));
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(require('path').join(__dirname, '../uploads'))
+);
 
 // Health check endpoint (Step A3)
 app.get('/api/health', (req, res) => {
