@@ -11,10 +11,13 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import StudentLiveClassesPage from './pages/student/StudentLiveClassesPage';
 import StudentRecordingsPage from './pages/student/StudentRecordingsPage';
 import StudentMaterialsPage from './pages/student/StudentMaterialsPage';
+import StudentQuizzesPage from './pages/student/StudentQuizzesPage';
+import StudentQuizAttemptPage from './pages/student/StudentQuizAttemptPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
 import TeacherRecordingsPage from './pages/teacher/TeacherRecordingsPage';
 import TeacherMaterialsPage from './pages/teacher/TeacherMaterialsPage';
+import TeacherQuizzesPage from './pages/teacher/TeacherQuizzesPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
@@ -91,6 +94,26 @@ export default function App() {
             path="/student/materials"
             element={<Navigate to="/student/learning-materials" replace />}
           />
+          <Route
+            path="/student/quizzes"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentQuizzesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/quizzes/:id/attempt"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentQuizAttemptPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/results"
+            element={<Navigate to="/student/quizzes" replace />}
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -132,6 +155,14 @@ export default function App() {
           <Route
             path="/teacher/materials"
             element={<Navigate to="/teacher/learning-materials" replace />}
+          />
+          <Route
+            path="/teacher/quizzes"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherQuizzesPage />
+              </ProtectedRoute>
+            }
           />
 
           {/* Admin Protected Routes */}
