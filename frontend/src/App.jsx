@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { useAuth } from './hooks/useAuth';
 import { getRoleDashboardPath } from './utils/navigation';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -52,7 +53,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <LanguageProvider>
+          <Routes>
           {/* Public Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -259,6 +261,7 @@ export default function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </LanguageProvider>
       </AuthProvider>
     </BrowserRouter>
   );

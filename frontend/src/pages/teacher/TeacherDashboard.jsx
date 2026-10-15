@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../context/LanguageContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import PageHeader from '../../components/PageHeader';
 import { Video, FileText, CheckSquare, BookOpen, PlaySquare, Bell } from 'lucide-react';
@@ -7,15 +8,16 @@ import { Link } from 'react-router-dom';
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <DashboardLayout>
       <PageHeader
-        title={`Welcome, ${user?.firstName || 'Teacher'}!`}
-        subtitle="Manage your assigned classes, schedule live sessions, publish recordings, upload PDF tutes, and configure online quizzes."
+        title={`${t('teacherWelcome')}, ${user?.firstName || t('roleTeacher')}!`}
+        subtitle={t('teacherSubtitle')}
         badge={
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 uppercase tracking-wider border border-emerald-200">
-            Teacher Portal
+            {t('teacherPortalBadge')}
           </span>
         }
       />
@@ -31,14 +33,14 @@ export default function TeacherDashboard() {
               <BookOpen className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-              Assigned Classes
+              {t('navAssignedClasses')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               View your academic classes, enrolled students, and syllabus schedule.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-blue-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            View Classes &rarr;
+            {t('actionViewAll')} &rarr;
           </span>
         </Link>
 
@@ -51,14 +53,14 @@ export default function TeacherDashboard() {
               <Video className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-              Live Classes
+              {t('navLiveClasses')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               Schedule interactive sessions, configure LiveKit rooms, and start classes.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-red-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Manage Live Sessions &rarr;
+            {t('actionCreateNew')} &rarr;
           </span>
         </Link>
 
@@ -71,14 +73,14 @@ export default function TeacherDashboard() {
               <PlaySquare className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-              Recorded Lessons
+              {t('navRecordedLessons')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               Embed YouTube unlisted video lessons for students to replay anytime.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-purple-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Manage Recordings &rarr;
+            {t('actionViewAll')} &rarr;
           </span>
         </Link>
 
@@ -91,14 +93,14 @@ export default function TeacherDashboard() {
               <FileText className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors">
-              PDF Tutes & Notes
+              {t('navMaterials')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               Upload class worksheets, revision tutorials, and study notes for students.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-sky-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Upload Materials &rarr;
+            {t('actionCreateNew')} &rarr;
           </span>
         </Link>
 
@@ -111,14 +113,14 @@ export default function TeacherDashboard() {
               <CheckSquare className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-              Online Quizzes
+              {t('navQuizzes')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               Create MCQ quizzes, set pass marks and time limits, and review student results.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-emerald-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Create Quizzes &rarr;
+            {t('actionCreateNew')} &rarr;
           </span>
         </Link>
 
@@ -131,14 +133,14 @@ export default function TeacherDashboard() {
               <Bell className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
-              Class Announcements
+              {t('navAnnouncements')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
               Broadcast urgent reminders, class schedule changes, and notices to students.
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-amber-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Post Announcement &rarr;
+            {t('actionCreateNew')} &rarr;
           </span>
         </Link>
       </div>

@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function ParentDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [summaryData, setSummaryData] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,19 +64,19 @@ export default function ParentDashboard() {
   return (
     <DashboardLayout>
       <PageHeader
-        title={`Welcome, ${user?.firstName || 'Parent'}!`}
-        subtitle="Overview of your child's learning schedule, academic progress, and center announcements."
-        breadcrumbs={[{ label: 'Parent', href: '/parent/dashboard' }, { label: 'Dashboard' }]}
+        title={`${t('parentWelcome')}, ${user?.firstName || t('roleParent')}!`}
+        subtitle={t('parentSubtitle')}
+        breadcrumbs={[{ label: t('roleParent'), href: '/parent/dashboard' }, { label: t('navDashboard') }]}
       />
 
       {error && <ErrorMessage message={error} onRetry={fetchData} className="mb-4" />}
 
       {loading ? (
-        <LoadingSpinner message="Loading dashboard information..." />
+        <LoadingSpinner message={t('loading')} />
       ) : !child ? (
         <EmptyState
           icon={User}
-          title="No Student Linked"
+          title={t('noRecords')}
           description="There are currently no active students linked to this parent account."
         />
       ) : (
@@ -82,7 +84,7 @@ export default function ParentDashboard() {
           {/* Linked Student Strip - Simple & Clean */}
           <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <span className="font-semibold text-slate-500">Student:</span>
+              <span className="font-semibold text-slate-500">{t('parentStudent')}:</span>
               <strong className="text-slate-900 font-bold text-sm">{child.name}</strong>
               <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
                 {enrolledClasses[0]?.grade_name || 'Grade 5'}
@@ -97,7 +99,7 @@ export default function ParentDashboard() {
                 to="/parent/student-details"
                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
               >
-                Profile & Details <ChevronRight className="w-3.5 h-3.5" />
+                {t('actionViewDetails')} <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
@@ -108,7 +110,7 @@ export default function ParentDashboard() {
               to="/parent/classes"
               className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition block"
             >
-              <p className="text-[11px] font-semibold text-slate-500 uppercase">Classes</p>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase">{t('parentEnrolledClasses')}</p>
               <p className="text-xl font-bold text-slate-900 mt-1">{stats.enrolledClassesCount}</p>
             </Link>
 
@@ -116,7 +118,7 @@ export default function ParentDashboard() {
               to="/parent/status"
               className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition block"
             >
-              <p className="text-[11px] font-semibold text-emerald-600 uppercase">Avg Quiz Marks</p>
+              <p className="text-[11px] font-semibold text-emerald-600 uppercase">{t('parentAvgQuizMarks')}</p>
               <p className="text-xl font-bold text-emerald-700 mt-1">{stats.avgScorePercentage}%</p>
             </Link>
 
@@ -124,7 +126,7 @@ export default function ParentDashboard() {
               to="/parent/status"
               className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition block"
             >
-              <p className="text-[11px] font-semibold text-blue-600 uppercase">Tests Done</p>
+              <p className="text-[11px] font-semibold text-blue-600 uppercase">{t('parentTestsDone')}</p>
               <p className="text-xl font-bold text-blue-700 mt-1">{stats.quizzesAttemptedCount}</p>
             </Link>
 
@@ -132,7 +134,7 @@ export default function ParentDashboard() {
               to="/parent/classes"
               className="bg-white p-3.5 rounded-xl border border-slate-200 hover:border-slate-300 transition block"
             >
-              <p className="text-[11px] font-semibold text-amber-600 uppercase">Live Sessions</p>
+              <p className="text-[11px] font-semibold text-amber-600 uppercase">{t('parentLiveSessions')}</p>
               <p className="text-xl font-bold text-amber-700 mt-1">{liveClasses.length}</p>
             </Link>
           </div>
@@ -144,13 +146,13 @@ export default function ParentDashboard() {
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <Video className="w-4 h-4 text-blue-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Upcoming Live Classes</h3>
+                  <h3 className="font-bold text-slate-900 text-sm">{t('parentUpcomingLive')}</h3>
                 </div>
                 <Link
                   to="/parent/classes"
                   className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-0.5"
                 >
-                  View Schedule &rarr;
+                  {t('actionViewAll')} &rarr;
                 </Link>
               </div>
 
@@ -201,13 +203,13 @@ export default function ParentDashboard() {
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-amber-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">Center Notices</h3>
+                  <h3 className="font-bold text-slate-900 text-sm">{t('parentCenterNotices')}</h3>
                 </div>
                 <Link
                   to="/parent/announcements"
                   className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-0.5"
                 >
-                  All Notices &rarr;
+                  {t('actionViewAll')} &rarr;
                 </Link>
               </div>
 

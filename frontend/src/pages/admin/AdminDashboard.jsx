@@ -16,9 +16,11 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
@@ -51,11 +53,11 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout>
       <PageHeader
-        title="System Administration"
-        subtitle="Manage student registrations, teacher assignments, grade levels, classes, enrollments, and global announcements."
+        title={t('adminWelcome')}
+        subtitle={t('adminSubtitle')}
         badge={
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 uppercase tracking-wider border border-purple-200">
-            Administrator
+            {t('adminPortalBadge')}
           </span>
         }
       />

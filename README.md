@@ -9,20 +9,26 @@ A responsive, lightweight Learning Management System built for **Wishwin Educati
 1. **Role-Based Portals**:
    - **Student Portal**: Access live classes, watch recorded lessons, view & download PDF tutes with in-app previewer, attempt interactive MCQ quizzes, and review auto-marked scores.
    - **Teacher Portal**: Schedule live classes, publish recorded lessons, upload PDF worksheets, build quizzes (LMS In-Built and Google Forms), and review student submission marks.
-   - **Parent Portal**:
-     - **Tab 1 — Overview & Notices**: View active classes, upcoming live timetable, and official center announcements.
-     - **Tab 2 — Student Details**: Child profile, registered grade, enrolled classes, and assigned teacher contact info.
-     - **Tab 3 — Child Academic Status**: Real-time quiz marks, assessment percentage, and live class attendance/join links.
+   - **Parent Portal**: Clean, dedicated sidebar links:
+     - **Overview**: Active classes summary, upcoming live timetable, and official center announcements.
+     - **Student Details**: Child profile, registered grade, enrolled classes, and assigned teacher contact info.
+     - **Academic Status**: Real-time quiz marks, assessment percentage, and live class attendance/join links.
+     - **Live Classes & Notices**: Timetable schedule and broadcast announcements.
    - **Admin Portal**: Manage users, classes, grades, enrollments, and system announcements.
 
-2. **Dual Quiz System**:
+2. **Bilingual Translation Engine (English & සිංහල)**:
+   - Dedicated `[ EN | සිං ]` toggle switch on the top navigation bar.
+   - Instant translation of all navigation items, role badges, action buttons, quiz controls, review dialogs, and announcement priority labels.
+   - Persistent preference saved in `localStorage` and synchronized across user sessions.
+
+3. **Dual Quiz System**:
    - **LMS In-Built Quiz**: Timed multiple-choice quizzes created directly on the platform with automated grading, instant score calculation, and post-submission answers review.
    - **Google Form Quiz**: Direct links to external Google Forms. When configured by the teacher, students see an "Open Google Form Quiz" button; when omitted, the button remains hidden.
 
-3. **In-LMS PDF Viewer**:
+4. **In-LMS PDF Viewer**:
    - Embedded preview for PDF tutes and worksheets with download and direct tab opening options.
 
-4. **Always-Visible Announcement Banner**:
+5. **Always-Visible Announcement Banner**:
    - Auto-sliding high-priority notices visible across all dashboards.
 
 ---

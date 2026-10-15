@@ -15,8 +15,10 @@ import {
   Tv,
 } from 'lucide-react';
 import api from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function StudentRecordingsPage() {
+  const { t } = useLanguage();
   const [recordings, setRecordings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,11 +65,11 @@ export default function StudentRecordingsPage() {
   return (
     <DashboardLayout>
       <PageHeader
-        title="Recorded Lessons"
-        subtitle="Watch and replay video lessons for your enrolled subjects to revise at your own pace."
+        title={t('cardRecordingsTitle')}
+        subtitle={t('cardRecordingsDesc')}
         breadcrumbs={[
-          { label: 'Student', href: '/student/dashboard' },
-          { label: 'Recorded Lessons' },
+          { label: t('roleStudent'), href: '/student/dashboard' },
+          { label: t('navRecordedLessons') },
         ]}
       />
 
@@ -79,7 +81,7 @@ export default function StudentRecordingsPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search lessons by topic or keywords..."
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
@@ -195,7 +197,7 @@ export default function StudentRecordingsPage() {
                   className="w-full py-2 rounded-xl bg-blue-600 group-hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Watch Lesson</span>
+                  <span>{t('actionWatchLesson')}</span>
                 </button>
               </div>
             </div>

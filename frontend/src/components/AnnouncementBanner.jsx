@@ -11,6 +11,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AnnouncementBanner({
   announcements: propAnnouncements,
@@ -18,6 +19,7 @@ export default function AnnouncementBanner({
   classId,
   className = '',
 }) {
+  const { t } = useLanguage();
   const [announcements, setAnnouncements] = useState(propAnnouncements || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(!propAnnouncements);
@@ -145,19 +147,19 @@ export default function AnnouncementBanner({
   const priorityConfig = {
     URGENT: {
       badge: 'bg-rose-500 text-white border-rose-300/40 shadow-xs',
-      badgeLabel: 'URGENT',
+      badgeLabel: t('priorityUrgent'),
       iconBox: 'bg-white/25 text-white border-white/30',
       icon: AlertCircle,
     },
     IMPORTANT: {
       badge: 'bg-amber-400 text-amber-950 border-amber-200/50 shadow-xs font-bold',
-      badgeLabel: 'IMPORTANT',
+      badgeLabel: t('priorityImportant'),
       iconBox: 'bg-white/25 text-white border-white/30',
       icon: Megaphone,
     },
     NORMAL: {
       badge: 'bg-white/25 text-white border-white/35',
-      badgeLabel: 'NOTICE',
+      badgeLabel: t('priorityNormal'),
       iconBox: 'bg-white/25 text-white border-white/30',
       icon: Bell,
     },
@@ -202,7 +204,7 @@ export default function AnnouncementBanner({
 
                 {activeAnnouncements.length > 1 && (
                   <span className="text-[11px] font-medium text-blue-100/90 hidden sm:inline-block">
-                    {isPaused ? '• Paused' : '• Auto-sliding'}
+                    {isPaused ? '• Paused' : `• ${t('announcementAutoSlide')}`}
                   </span>
                 )}
               </div>

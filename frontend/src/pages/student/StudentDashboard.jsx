@@ -1,21 +1,23 @@
 import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useLanguage } from '../../context/LanguageContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import PageHeader from '../../components/PageHeader';
-import { Video, FileText, CheckSquare, PlaySquare, Bell } from 'lucide-react';
+import { Video, FileText, CheckSquare, PlaySquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <DashboardLayout>
       <PageHeader
-        title={`Welcome back, ${user?.firstName || 'Student'}! 👋`}
-        subtitle="Access your scheduled live classes, recorded lessons, PDF tutes, and interactive quizzes."
+        title={`${t('studentWelcome')}, ${user?.firstName || t('roleStudent')}! 👋`}
+        subtitle={t('studentSubtitle')}
         badge={
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 uppercase tracking-wider border border-blue-200">
-            Student Portal
+            {t('studentPortalBadge')}
           </span>
         }
       />
@@ -31,14 +33,14 @@ export default function StudentDashboard() {
               <Video className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-              Live Classes
+              {t('cardLiveTitle')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Join interactive live sessions with your teacher and classmates.
+              {t('cardLiveDesc')}
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-red-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Join Live &rarr;
+            {t('actionJoinLive')} &rarr;
           </span>
         </Link>
 
@@ -51,14 +53,14 @@ export default function StudentDashboard() {
               <PlaySquare className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-              Recorded Lessons
+              {t('cardRecordingsTitle')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Rewatch past lessons anytime to revise challenging scholarship topics.
+              {t('cardRecordingsDesc')}
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-purple-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Watch Lessons &rarr;
+            {t('actionWatchLesson')} &rarr;
           </span>
         </Link>
 
@@ -71,14 +73,14 @@ export default function StudentDashboard() {
               <FileText className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-sky-600 transition-colors">
-              PDF Tutes & Notes
+              {t('cardMaterialsTitle')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Download scholarship papers, worksheets, and class notes.
+              {t('cardMaterialsDesc')}
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-sky-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Download Tutes &rarr;
+            {t('actionDownload')} &rarr;
           </span>
         </Link>
 
@@ -91,14 +93,14 @@ export default function StudentDashboard() {
               <CheckSquare className="w-6 h-6" />
             </div>
             <h3 className="font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-              Online Quizzes
+              {t('cardQuizzesTitle')}
             </h3>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Test your knowledge with timed MCQ practice tests and check results.
+              {t('cardQuizzesDesc')}
             </p>
           </div>
           <span className="mt-4 text-xs font-semibold text-emerald-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            Start Quiz &rarr;
+            {t('actionStartQuiz')} &rarr;
           </span>
         </Link>
       </div>

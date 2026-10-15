@@ -16,47 +16,56 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const role = user?.role || 'STUDENT';
 
-  // Navigation schema per role based on Development Guide Phase 1 Scope
+  // Navigation schema per role with bilingual translation keys
   const navConfigs = {
     ADMIN: [
-      { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
-      { label: 'User Management', path: '/admin/users', icon: Users },
-      { label: 'Class Management', path: '/admin/classes', icon: BookOpen },
-      { label: 'Enrollments', path: '/admin/enrollments', icon: UserCheck },
-      { label: 'Announcements', path: '/admin/announcements', icon: Bell },
+      { labelKey: 'navOverview', defaultLabel: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navUserManagement', defaultLabel: 'User Management', path: '/admin/users', icon: Users },
+      { labelKey: 'navClassManagement', defaultLabel: 'Class Management', path: '/admin/classes', icon: BookOpen },
+      { labelKey: 'navEnrollments', defaultLabel: 'Enrollments', path: '/admin/enrollments', icon: UserCheck },
+      { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/admin/announcements', icon: Bell },
     ],
     TEACHER: [
-      { label: 'Dashboard', path: '/teacher/dashboard', icon: LayoutDashboard },
-      { label: 'Assigned Classes', path: '/teacher/classes', icon: BookOpen },
-      { label: 'Live Classes', path: '/teacher/live-classes', icon: Video },
-      { label: 'Recorded Lessons', path: '/teacher/recorded-lessons', icon: PlaySquare },
-      { label: 'PDF Materials', path: '/teacher/learning-materials', icon: FileText },
-      { label: 'Online Quizzes', path: '/teacher/quizzes', icon: HelpCircle },
-      { label: 'Announcements', path: '/teacher/announcements', icon: Bell },
+      { labelKey: 'navDashboard', defaultLabel: 'Dashboard', path: '/teacher/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navAssignedClasses', defaultLabel: 'Assigned Classes', path: '/teacher/classes', icon: BookOpen },
+      { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/teacher/live-classes', icon: Video },
+      { labelKey: 'navRecordedLessons', defaultLabel: 'Recorded Lessons', path: '/teacher/recorded-lessons', icon: PlaySquare },
+      { labelKey: 'navMaterials', defaultLabel: 'PDF Materials', path: '/teacher/learning-materials', icon: FileText },
+      { labelKey: 'navQuizzes', defaultLabel: 'Online Quizzes', path: '/teacher/quizzes', icon: HelpCircle },
+      { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/teacher/announcements', icon: Bell },
     ],
     STUDENT: [
-      { label: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
-      { label: 'Live Classes', path: '/student/live-classes', icon: Video },
-      { label: 'Recorded Lessons', path: '/student/recorded-lessons', icon: PlaySquare },
-      { label: 'PDF Tutes & Notes', path: '/student/learning-materials', icon: FileText },
-      { label: 'Online Quizzes', path: '/student/quizzes', icon: HelpCircle },
-      { label: 'Announcements', path: '/student/announcements', icon: Bell },
+      { labelKey: 'navDashboard', defaultLabel: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/student/live-classes', icon: Video },
+      { labelKey: 'navRecordedLessons', defaultLabel: 'Recorded Lessons', path: '/student/recorded-lessons', icon: PlaySquare },
+      { labelKey: 'navMaterials', defaultLabel: 'PDF Tutes & Notes', path: '/student/learning-materials', icon: FileText },
+      { labelKey: 'navQuizzes', defaultLabel: 'Online Quizzes', path: '/student/quizzes', icon: HelpCircle },
+      { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/student/announcements', icon: Bell },
     ],
     PARENT: [
-      { label: 'Overview', path: '/parent/dashboard', icon: LayoutDashboard },
-      { label: 'Student Details', path: '/parent/student-details', icon: User },
-      { label: 'Academic Status', path: '/parent/status', icon: BarChart3 },
-      { label: 'Live Classes', path: '/parent/classes', icon: Video },
-      { label: 'Announcements', path: '/parent/announcements', icon: Bell },
+      { labelKey: 'navOverview', defaultLabel: 'Overview', path: '/parent/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navStudentDetails', defaultLabel: 'Student Details', path: '/parent/student-details', icon: User },
+      { labelKey: 'navAcademicStatus', defaultLabel: 'Academic Status', path: '/parent/status', icon: BarChart3 },
+      { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/parent/classes', icon: Video },
+      { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/parent/announcements', icon: Bell },
     ],
   };
 
   const navItems = navConfigs[role] || navConfigs.STUDENT;
+
+  const roleLabels = {
+    ADMIN: t('roleAdmin', 'Administrator'),
+    TEACHER: t('roleTeacher', 'Teacher'),
+    STUDENT: t('roleStudent', 'Student'),
+    PARENT: t('roleParent', 'Parent'),
+  };
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
@@ -80,7 +89,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Role tag */}
       <div className="px-5 pt-5 pb-3">
         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 select-none">
-          {role} Workspace
+          {roleLabels[role] || role} {t('workspace', 'Workspace')}
         </span>
       </div>
 
@@ -110,7 +119,7 @@ export default function Sidebar({ isOpen, onClose }) {
                       isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-600 group-hover:scale-105'
                     }`}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(item.labelKey, item.defaultLabel)}</span>
                 </>
               )}
             </NavLink>
@@ -122,10 +131,10 @@ export default function Sidebar({ isOpen, onClose }) {
       <div className="p-4 border-t border-slate-100 bg-slate-50/60">
         <div className="bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs">
           <p className="text-xs font-semibold text-slate-800 truncate">
-            Wishwin LMS Phase 1
+            Wishwin LMS
           </p>
           <p className="text-[11px] text-slate-400 mt-0.5">
-            Academic Release 1.0
+            Bilingual Edition (EN / සිං)
           </p>
         </div>
       </div>

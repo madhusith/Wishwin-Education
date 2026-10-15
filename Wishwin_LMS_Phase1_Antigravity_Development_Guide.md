@@ -63,14 +63,20 @@ The system should be designed so future features can be added later without rebu
 
 ## 2.4 Parent
 
-- Register
-- Login
-- View Parent Dashboard with dedicated tabbed interface:
-  - **Tab 1: Overview & Notices**: Active class counts, live session timetable, and center announcements.
-  - **Tab 2: Student Details**: Linked child profile, student ID, enrolled grade, class details, and assigned teacher contact info.
-  - **Tab 3: Academic Status & Progress**: Real-time quiz marks, assessment scores, percentage performance, and live class attendance/join links.
-- Dedicated routes for `/parent/classes` and `/parent/announcements`.
-- `parent_students` relational mapping table.
+- Register & Login
+- View Parent Dashboard with dedicated navigation links in the sidebar:
+  - **Overview**: Active class counts, live session timetable, and center announcements.
+  - **Student Details**: Linked child profile, student ID, enrolled grade, class details, and assigned teacher contact info.
+  - **Academic Status & Progress**: Real-time quiz marks, assessment scores, percentage performance, and live class attendance/join links.
+  - **Live Classes & Notices**: Timetable schedule and broadcast announcements.
+- `parent_students` relational mapping table with `/parent/child-summary` endpoint.
+
+## 2.5 Bilingual Translation Engine (English & සිංහල)
+
+- Persistent top-bar toggle switch (`[ EN | සිං ]`).
+- Dynamic i18n dictionary context (`LanguageContext`) mapping all navigation items, role badges, action buttons, quiz attempt controls, scorecard metrics, and announcement priority tags.
+- Simple, non-bulky UI integration with instant zero-reload state switching.
+- Persistent language preference stored in `localStorage` and HTML tag synchronization (`<html lang="en">` / `<html lang="si">`).
 
 ---
 
