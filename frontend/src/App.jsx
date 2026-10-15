@@ -24,6 +24,8 @@ import AdminClassesPage from './pages/admin/AdminClassesPage';
 import AdminEnrollmentsPage from './pages/admin/AdminEnrollmentsPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
 import ParentDashboard from './pages/parent/ParentDashboard';
+import ParentClassesPage from './pages/parent/ParentClassesPage';
+import ParentAnnouncementsPage from './pages/parent/ParentAnnouncementsPage';
 
 // Root redirect handler
 function RootRedirect() {
@@ -213,6 +215,22 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['PARENT']}>
                 <ParentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/classes"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentClassesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentAnnouncementsPage />
               </ProtectedRoute>
             }
           />
