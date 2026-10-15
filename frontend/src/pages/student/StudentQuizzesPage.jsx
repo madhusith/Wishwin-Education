@@ -9,18 +9,13 @@ import api from '../../services/api';
 import {
   HelpCircle,
   Clock,
-  CheckCircle2,
   ExternalLink,
-  BookOpen,
   Search,
   FileQuestion,
   Award,
-  Sparkles,
   Link as LinkIcon,
   Play,
   RotateCcw,
-  CheckSquare,
-  AlertCircle,
   X,
 } from 'lucide-react';
 
@@ -56,7 +51,7 @@ export default function StudentQuizzesPage() {
       setClasses(classesRes.data?.data || []);
     } catch (err) {
       console.error('Error fetching quizzes:', err);
-      setError(err.response?.data?.message || 'Failed to load quizzes. Please try again.');
+      setError(err.response?.data?.message || 'Failed to load quizzes.');
     } finally {
       setLoading(false);
     }
@@ -70,25 +65,12 @@ export default function StudentQuizzesPage() {
       setReviewData(res.data?.data);
     } catch (err) {
       console.error('Error fetching attempt review:', err);
-      alert('Failed to load your previous attempt results.');
+      alert('Failed to load previous attempt results.');
     } finally {
       setLoadingReview(false);
     }
   };
 
-  // Metrics
-  const completedCount = quizzes.filter((q) => q.myAttempt).length;
-  const pendingCount = quizzes.length - completedCount;
-  const avgScore =
-    completedCount > 0
-      ? Math.round(
-          quizzes
-            .filter((q) => q.myAttempt)
-            .reduce((sum, q) => sum + q.myAttempt.percentage, 0) / completedCount
-        )
-      : 0;
-
-  // Filtered
   const filteredQuizzes = quizzes.filter((q) => {
     const matchClass = !selectedClassId || String(q.classId) === String(selectedClassId);
     const matchSearch =
@@ -102,55 +84,33 @@ export default function StudentQuizzesPage() {
     <DashboardLayout>
       <PageHeader
         title="Online Quizzes & Assessments"
-        subtitle="Practice scholarship questions, test your speed, and review instant automated results."
-        badge={
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 uppercase tracking-wider border border-emerald-200">
-            Student Practice
-          </span>
-        }
+        subtitle="Practice questions, test your knowledge, and review instant results."
+        breadcrumbs={[
+          { label: 'Student', href: '/student/dashboard' },
+          { label: 'Quizzes' },
+        ]}
       />
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Available Quizzes</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{quizzes.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Completed</p>
-          <p className="text-2xl font-black text-emerald-700 mt-1">{completedCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Pending</p>
-          <p className="text-2xl font-black text-amber-700 mt-1">{pendingCount}</p>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Average Score</p>
-          <p className="text-2xl font-black text-blue-700 mt-1">
-            {completedCount > 0 ? `${avgScore}%` : 'N/A'}
-          </p>
-        </div>
-      </div>
+      {error && <ErrorMessage message={error} onRetry={fetchData} className="mb-4" />}
 
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs mb-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="w-full sm:w-72 relative">
+      {/* Clean Filter Bar */}
+      <div className="bg-white p-3.5 rounded-xl border border-slate-200 mb-6 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search quizzes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           />
         </div>
 
-        <div className="w-full sm:w-auto flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-2">
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="w-full sm:w-56 px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
             <option value="">All Enrolled Classes</option>
             {classes.map((c) => (
@@ -162,11 +122,9 @@ export default function StudentQuizzesPage() {
         </div>
       </div>
 
-      {/* Quizzes List */}
+      {/* Quizzes Grid */}
       {loading ? (
         <LoadingSpinner message="Loading your quizzes..." />
-      ) : error ? (
-        <ErrorMessage message={error} onRetry={fetchData} />
       ) : filteredQuizzes.length === 0 ? (
         <EmptyState
           icon={HelpCircle}
@@ -178,7 +136,7 @@ export default function StudentQuizzesPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredQuizzes.map((quiz) => {
             const hasLmsQuiz =
               quiz.quizType === 'IN_BUILD' || quiz.quizType === 'BOTH' || quiz.questionCount > 0;
@@ -188,28 +146,27 @@ export default function StudentQuizzesPage() {
             return (
               <div
                 key={quiz.id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+                className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition flex flex-col justify-between"
               >
-                <div className="p-5">
-                  {/* Top class badge & attempt badge */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <div className="p-4">
+                  {/* Class & Status Badge */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
                       {quiz.className}
                     </span>
                     {quiz.myAttempt ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        {quiz.myAttempt.percentage}%
+                      <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                        Score: {quiz.myAttempt.score}/{quiz.myAttempt.totalMarks} ({quiz.myAttempt.percentage}%)
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                        <AlertCircle className="w-3.5 h-3.5" />
+                      <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                         Not Attempted
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-blue-600 transition-colors">
+                  {/* Title & Description */}
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug line-clamp-1">
                     {quiz.title}
                   </h3>
                   {quiz.description && (
@@ -218,95 +175,85 @@ export default function StudentQuizzesPage() {
                     </p>
                   )}
 
-                  {/* Format Badges */}
-                  <div className="flex flex-wrap items-center gap-1.5 mt-3.5">
-                    {quiz.quizType === 'IN_BUILD' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                        <Sparkles className="w-3 h-3 text-blue-600" /> LMS In-Built
-                      </span>
-                    )}
-                    {quiz.quizType === 'GOOGLE_FORM' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                        <LinkIcon className="w-3 h-3 text-amber-600" /> Google Form
-                      </span>
-                    )}
-                    {quiz.quizType === 'BOTH' && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                        <CheckSquare className="w-3 h-3 text-purple-600" /> Dual Format (LMS + Google Form)
-                      </span>
-                    )}
-
+                  {/* Clean Info Badges */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                    <span className="font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      {quiz.quizType === 'IN_BUILD'
+                        ? 'LMS Quiz'
+                        : quiz.quizType === 'GOOGLE_FORM'
+                        ? 'Google Form'
+                        : 'Dual Format'}
+                    </span>
                     {quiz.timeLimitMinutes > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-600 border border-slate-200">
-                        <Clock className="w-3 h-3 text-slate-400" /> {quiz.timeLimitMinutes} mins
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-slate-400" />
+                        {quiz.timeLimitMinutes}m
+                      </span>
+                    )}
+                    {quiz.questionCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <FileQuestion className="w-3 h-3 text-slate-400" />
+                        {quiz.questionCount} Questions
+                      </span>
+                    )}
+                    {quiz.totalMarks > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Award className="w-3 h-3 text-slate-400" />
+                        {quiz.totalMarks} Marks
                       </span>
                     )}
                   </div>
 
-                  {/* Info Row */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                    <div className="flex items-center gap-1.5">
-                      <FileQuestion className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{quiz.questionCount} Questions</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Award className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{quiz.totalMarks} Total Marks</span>
-                    </div>
-                  </div>
-
-                  {/* Previous Attempt Summary if completed */}
+                  {/* Review Link if attempted */}
                   {quiz.myAttempt && (
-                    <div className="mt-3 p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200/80 flex items-center justify-between">
-                      <span className="text-xs text-emerald-900 font-bold">
-                        Score: {quiz.myAttempt.score} / {quiz.myAttempt.totalMarks}
-                      </span>
+                    <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-500">Attempted</span>
                       <button
                         onClick={() => handleOpenReview(quiz)}
-                        className="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold underline cursor-pointer"
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
                       >
-                        Review Answers
+                        Review Answers &rarr;
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Card Action Buttons (Direct User Requirement: 2 buttons if teacher provided Google Form link, hidden if not!) */}
-                <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex flex-col gap-2">
-                  {/* Button 1: LMS In-Built Quiz Button */}
+                {/* Direct Action Buttons: Dual buttons if Google Form is present, only 1 button if not */}
+                <div className="p-3 bg-slate-50 border-t border-slate-100 rounded-b-xl flex flex-col gap-2">
+                  {/* Button 1: LMS In-Built Test */}
                   {hasLmsQuiz && (
                     <Link
                       to={`/student/quizzes/${quiz.id}/attempt`}
-                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-xs ${
+                      className={`w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
                         quiz.myAttempt
-                          ? 'bg-slate-800 hover:bg-slate-900 text-white'
+                          ? 'bg-slate-700 hover:bg-slate-800 text-white'
                           : 'bg-blue-600 hover:bg-blue-700 text-white'
                       }`}
                     >
                       {quiz.myAttempt ? (
                         <>
                           <RotateCcw className="w-3.5 h-3.5" />
-                          Re-attempt LMS Quiz
+                          <span>Re-attempt LMS Quiz</span>
                         </>
                       ) : (
                         <>
                           <Play className="w-3.5 h-3.5" />
-                          Take LMS In-Built Quiz
+                          <span>Start LMS Quiz</span>
                         </>
                       )}
                     </Link>
                   )}
 
-                  {/* Button 2: Google Form Quiz Button (ONLY DISPLAYED IF TEACHER PROVIDED A GOOGLE FORM LINK) */}
+                  {/* Button 2: Google Form Quiz (ONLY shown if teacher provided link) */}
                   {hasGoogleForm && (
                     <a
                       href={quiz.googleFormUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center gap-2 transition shadow-xs"
+                      className="w-full py-2 px-3 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center gap-1.5 transition"
                     >
                       <LinkIcon className="w-3.5 h-3.5" />
-                      Open Google Form Quiz
+                      <span>Open Google Form Quiz</span>
                       <ExternalLink className="w-3 h-3 ml-0.5" />
                     </a>
                   )}
@@ -317,99 +264,83 @@ export default function StudentQuizzesPage() {
         </div>
       )}
 
-      {/* STUDENT ATTEMPT REVIEW MODAL */}
+      {/* Student Review Modal */}
       {reviewQuiz && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in duration-200">
-            <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">
-                  Review Results: {reviewQuiz.title}
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Review: {reviewQuiz.title}
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Detailed review of your selected choices and correct answers.
+                <p className="text-[11px] text-slate-500">
+                  Review your answers and correct options.
                 </p>
               </div>
               <button
                 onClick={() => setReviewQuiz(null)}
-                className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="p-4 overflow-y-auto flex-1 space-y-3">
               {loadingReview ? (
-                <LoadingSpinner message="Loading your attempt answers..." />
+                <LoadingSpinner message="Loading answers..." />
               ) : reviewData ? (
                 <>
-                  {/* Score Highlight Box */}
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs">
                     <div>
-                      <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Your Score</p>
-                      <p className="text-2xl font-black text-emerald-700 mt-0.5">
-                        {reviewData.score} / {reviewData.totalMarks}
-                      </p>
+                      <span className="text-slate-500">Score:</span>{' '}
+                      <strong className="text-slate-900 font-bold">
+                        {reviewData.score} / {reviewData.totalMarks} ({reviewData.percentage}%)
+                      </strong>
                     </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-black text-emerald-600">
-                        {reviewData.percentage}%
-                      </span>
-                      <p className="text-[11px] text-emerald-800 mt-0.5">
-                        Submitted: {new Date(reviewData.submittedAt).toLocaleDateString()}
-                      </p>
-                    </div>
+                    <span className="text-slate-400 text-[11px]">
+                      {new Date(reviewData.submittedAt).toLocaleDateString()}
+                    </span>
                   </div>
 
-                  {/* Answers breakdown */}
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-2.5">
                     {reviewData.answers.map((ans, idx) => (
                       <div
                         key={idx}
-                        className={`p-4 rounded-2xl border ${
+                        className={`p-3 rounded-lg border text-xs space-y-1.5 ${
                           ans.isCorrect
                             ? 'bg-emerald-50/40 border-emerald-200'
                             : 'bg-red-50/40 border-red-200'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-slate-800">
-                            Question #{idx + 1}
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-slate-800">
+                            Q{idx + 1}. {ans.questionText}
                           </span>
                           <span
-                            className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
                               ans.isCorrect
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {ans.isCorrect ? `+${ans.marksAwarded} Marks` : '0 Marks'}
+                            {ans.isCorrect ? `+${ans.marksAwarded}` : '0'}
                           </span>
                         </div>
 
-                        <p className="text-sm font-semibold text-slate-900 mb-2">
-                          {ans.questionText}
-                        </p>
-
-                        <div className="space-y-1.5 text-xs">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-slate-500 font-medium">Your Answer:</span>
-                            <span
-                              className={`font-bold ${
-                                ans.isCorrect ? 'text-emerald-700' : 'text-red-600'
-                              }`}
-                            >
-                              {ans.selectedOptionText || '(Unanswered)'}
+                        <div className="text-[11px] space-y-0.5">
+                          <p>
+                            <span className="text-slate-500">Your choice:</span>{' '}
+                            <span className={ans.isCorrect ? 'text-emerald-700 font-semibold' : 'text-red-600 font-semibold'}>
+                              {ans.selectedOptionText || '(None)'}
                             </span>
-                          </div>
-
+                          </p>
                           {!ans.isCorrect && ans.correctOptionText && (
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-slate-500 font-medium">Correct Answer:</span>
-                              <span className="font-bold text-emerald-700">
+                            <p>
+                              <span className="text-slate-500">Correct:</span>{' '}
+                              <span className="text-emerald-700 font-semibold">
                                 {ans.correctOptionText}
                               </span>
-                            </div>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -417,7 +348,7 @@ export default function StudentQuizzesPage() {
                   </div>
                 </>
               ) : (
-                <EmptyState title="No Review Available" description="Could not load your attempt." />
+                <EmptyState title="No Review" description="Could not load your attempt." />
               )}
             </div>
           </div>
