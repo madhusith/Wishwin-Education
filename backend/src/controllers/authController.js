@@ -23,12 +23,18 @@ async function register(req, res) {
       });
     }
 
-    // 2. Validate role - Public registration allowed ONLY for STUDENT or PARENT
-    const normalizedRole = role.toUpperCase().trim();
-    if (!['STUDENT', 'PARENT'].includes(normalizedRole)) {
+    // 2. Validate role - Public registration allowed ONLY for PARENT
+    const normalizedRole = (role || 'PARENT').toUpperCase().trim();
+    if (normalizedRole === 'STUDENT') {
       return res.status(400).json({
         success: false,
-        message: 'Public registration is only permitted for STUDENT and PARENT roles.',
+        message: 'Students cannot self-register. A parent must register and create the student account from their Parent Portal.',
+      });
+    }
+    if (normalizedRole !== 'PARENT') {
+      return res.status(400).json({
+        success: false,
+        message: 'Public registration is only permitted for Parent accounts.',
       });
     }
 
@@ -107,10 +113,14 @@ async function login(req, res) {
       });
     }
 
-    // Fetch user
+    // Fetch user by email or username (for students who enter their username without domain)
+    const cleanIdentifier = email.toLowerCase().trim();
     const [rows] = await pool.query(
-      'SELECT id, first_name, last_name, email, password_hash, role, status FROM users WHERE email = ?',
-      [email.toLowerCase().trim()]
+      `SELECT id, first_name, last_name, email, password_hash, role, status 
+       FROM users 
+       WHERE email = ? OR email = ? OR email LIKE ?
+       LIMIT 1`,
+      [cleanIdentifier, `${cleanIdentifier}@student.wishwin.edu`, `${cleanIdentifier}@%`]
     );
 
     if (rows.length === 0) {

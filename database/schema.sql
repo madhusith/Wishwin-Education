@@ -134,6 +134,9 @@ CREATE TABLE quizzes (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     instructions TEXT,
+    quiz_type ENUM('IN_BUILD', 'GOOGLE_FORM', 'BOTH') NOT NULL DEFAULT 'IN_BUILD',
+    google_form_url VARCHAR(500),
+    time_limit_minutes INT DEFAULT 0,
     published BOOLEAN NOT NULL DEFAULT FALSE,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -212,4 +215,17 @@ CREATE TABLE announcements (
     INDEX idx_announcements_target_class (target_class_id),
     CONSTRAINT fk_announcements_class FOREIGN KEY (target_class_id) REFERENCES classes(id) ON DELETE CASCADE,
     CONSTRAINT fk_announcements_creator FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8.14 Parent Students Mapping
+CREATE TABLE IF NOT EXISTS parent_students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id INT NOT NULL,
+    student_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_parent_student (parent_id, student_id),
+    INDEX idx_parent_students_parent (parent_id),
+    INDEX idx_parent_students_student (student_id),
+    CONSTRAINT fk_ps_parent FOREIGN KEY (parent_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ps_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

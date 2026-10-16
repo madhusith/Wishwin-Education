@@ -1,6 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, Bell, ChevronLeft, ChevronRight, Megaphone, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  AlertCircle,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Megaphone,
+  X,
+  Pause,
+  Play,
+  Volume2,
+} from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AnnouncementBanner({
   announcements: propAnnouncements,
@@ -8,9 +19,12 @@ export default function AnnouncementBanner({
   classId,
   className = '',
 }) {
+  const { t } = useLanguage();
   const [announcements, setAnnouncements] = useState(propAnnouncements || []);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(!propAnnouncements);
+  const [isPaused, setIsPaused] = useState(false);
+  const [slideDirection, setSlideDirection] = useState('right');
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('wishwin_dismissed_announcements') || '[]');
@@ -38,7 +52,6 @@ export default function AnnouncementBanner({
           setAnnouncements(res.data.data);
         }
       } catch (err) {
-        // Silent fail for banner - avoid crashing UI if no announcements or offline
         console.warn('Failed to load announcements banner:', err.message);
       } finally {
         if (isMounted) setLoading(false);
@@ -56,7 +69,6 @@ export default function AnnouncementBanner({
     .filter((a) => {
       if (!a.active) return false;
 
-      // Check date validity
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
@@ -72,33 +84,40 @@ export default function AnnouncementBanner({
         if (now > end) return false;
       }
 
-      // Check role/class targeting
       if (userRole && a.target_type && a.target_type !== 'ALL') {
         if (userRole === 'STUDENT' && !['STUDENTS', 'CLASS'].includes(a.target_type)) return false;
         if (userRole === 'TEACHER' && a.target_type !== 'TEACHERS') return false;
         if (userRole === 'PARENT' && a.target_type !== 'PARENTS') return false;
       }
 
-      // Urgent ones cannot be permanently dismissed
       if (a.priority === 'URGENT') return true;
-
       return !dismissedIds.includes(a.id);
     })
     .sort((a, b) => {
-      // 1. Highest priority first: URGENT > IMPORTANT > NORMAL
       const priorityWeights = { URGENT: 3, IMPORTANT: 2, NORMAL: 1 };
       const weightDiff = (priorityWeights[b.priority] || 1) - (priorityWeights[a.priority] || 1);
       if (weightDiff !== 0) return weightDiff;
-
-      // 2. Latest announcement first within same priority
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
+
+  // Automatic sliding timer (every 5 seconds, pauses on hover)
+  useEffect(() => {
+    if (activeAnnouncements.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      setSlideDirection('right');
+      setCurrentIndex((prev) => (prev + 1) % activeAnnouncements.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [activeAnnouncements.length, isPaused]);
 
   if (loading || activeAnnouncements.length === 0) {
     return null;
   }
 
-  const current = activeAnnouncements[currentIndex >= activeAnnouncements.length ? 0 : currentIndex];
+  const safeIndex = currentIndex >= activeAnnouncements.length ? 0 : currentIndex;
+  const current = activeAnnouncements[safeIndex];
   if (!current) return null;
 
   const handleDismiss = (id) => {
@@ -115,108 +134,149 @@ export default function AnnouncementBanner({
   };
 
   const nextAnnouncement = () => {
+    setSlideDirection('right');
     setCurrentIndex((prev) => (prev + 1) % activeAnnouncements.length);
   };
 
   const prevAnnouncement = () => {
+    setSlideDirection('left');
     setCurrentIndex((prev) => (prev - 1 + activeAnnouncements.length) % activeAnnouncements.length);
   };
 
-  // Priority styling
-  const styleConfig = {
+  // Priority pill styling tailored for light blue background
+  const priorityConfig = {
     URGENT: {
-      container: 'bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-md shadow-red-500/10',
-      badge: 'bg-white/20 text-white border border-white/30',
-      pulse: 'bg-white',
+      badge: 'bg-rose-500 text-white border-rose-300/40 shadow-xs',
+      badgeLabel: t('priorityUrgent'),
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: AlertCircle,
     },
     IMPORTANT: {
-      container: 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white shadow-md shadow-amber-500/10',
-      badge: 'bg-white/20 text-white border border-white/30',
-      pulse: 'bg-amber-100',
+      badge: 'bg-amber-400 text-amber-950 border-amber-200/50 shadow-xs font-bold',
+      badgeLabel: t('priorityImportant'),
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: Megaphone,
     },
     NORMAL: {
-      container: 'bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white shadow-md shadow-blue-500/10',
-      badge: 'bg-white/15 text-white border border-white/20',
-      pulse: 'bg-sky-300',
+      badge: 'bg-white/25 text-white border-white/35',
+      badgeLabel: t('priorityNormal'),
+      iconBox: 'bg-white/25 text-white border-white/30',
       icon: Bell,
     },
   };
 
-  const currentStyle = styleConfig[current.priority] || styleConfig.NORMAL;
-  const CurrentIcon = currentStyle.icon;
+  const currentPriority = priorityConfig[current.priority] || priorityConfig.NORMAL;
+  const CurrentIcon = currentPriority.icon;
 
   return (
     <div
       role="region"
       aria-label="Active announcements"
-      className={`relative w-full rounded-xl sm:rounded-2xl transition-all duration-300 overflow-hidden ${currentStyle.container} ${className}`}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className={`relative group w-full ${className}`}
     >
-      <div className="px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between gap-3">
-        {/* Left: Icon & Content */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="p-2 rounded-xl bg-white/15 shrink-0 backdrop-blur-xs flex items-center justify-center">
-            <CurrentIcon className="w-5 h-5 text-white animate-pulse" />
-          </div>
+      {/* Glowing small frame around the banner */}
+      <div className="absolute -inset-[1.5px] rounded-2xl bg-[#145dfb]/60 blur-[4px] opacity-80 group-hover:opacity-100 transition duration-500 pointer-events-none" />
 
-          <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider ${currentStyle.badge}`}>
-                {current.priority === 'URGENT' ? '🔴 URGENT' : current.priority === 'IMPORTANT' ? '⚡ IMPORTANT' : '📢 NOTICE'}
-              </span>
-              {current.className && (
-                <span className="text-[11px] font-medium text-white/80 bg-black/15 px-2 py-0.5 rounded-md hidden md:inline-block">
-                  {current.className}
+      {/* Main banner card: Exact #145dfb blue with glowing border frame */}
+      <div className="relative w-full rounded-2xl bg-[#145dfb] border border-blue-300/40 shadow-lg shadow-[#145dfb]/30 text-white overflow-hidden transition-all duration-300">
+        <div className="px-5 py-4.5 sm:px-7 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Left: Icon & Content */}
+          <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
+            {/* Luminous icon box */}
+            <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 border backdrop-blur-xs flex items-center justify-center ${currentPriority.iconBox}`}>
+              <CurrentIcon className="w-5 h-5 text-white" />
+            </div>
+
+            {/* Announcement text */}
+            <div key={current.id} className="min-w-0 flex-1 space-y-1 animate-in fade-in slide-in-from-right-3 duration-300">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${currentPriority.badge}`}>
+                  {currentPriority.badgeLabel}
                 </span>
-              )}
-            </div>
 
-            <div className="min-w-0 flex-1">
-              <span className="font-bold text-xs sm:text-sm text-white mr-2">
-                {current.title}
-              </span>
-              <span className="text-xs text-white/90 font-normal line-clamp-1 sm:inline">
-                {current.message}
-              </span>
+                {current.className && (
+                  <span className="text-xs font-semibold text-white bg-black/20 px-2 py-0.5 rounded-md backdrop-blur-xs">
+                    {current.className}
+                  </span>
+                )}
+
+                {activeAnnouncements.length > 1 && (
+                  <span className="text-[11px] font-medium text-blue-100/90 hidden sm:inline-block">
+                    {isPaused ? '• Paused' : `• ${t('announcementAutoSlide')}`}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-bold text-sm sm:text-base text-white tracking-tight drop-shadow-xs">
+                  {current.title}
+                </h3>
+                <p className="mt-0.5 text-xs sm:text-sm text-blue-50/95 leading-relaxed line-clamp-2 md:line-clamp-none max-w-4xl font-normal">
+                  {current.message}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right: Controls & Dismiss */}
-        <div className="flex items-center gap-2 shrink-0">
-          {activeAnnouncements.length > 1 && (
-            <div className="flex items-center gap-1 bg-black/20 rounded-lg p-0.5 text-xs text-white/90">
-              <button
-                onClick={prevAnnouncement}
-                className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
-                aria-label="Previous announcement"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
-              <span className="px-1.5 text-[11px] font-semibold tabular-nums select-none">
-                {currentIndex + 1}/{activeAnnouncements.length}
-              </span>
-              <button
-                onClick={nextAnnouncement}
-                className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
-                aria-label="Next announcement"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
+          {/* Right: Simple Navigation Controls */}
+          <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/20">
+            {activeAnnouncements.length > 1 && (
+              <div className="flex items-center gap-2.5">
+                {/* Dots indicator */}
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-black/15 rounded-lg border border-white/20 backdrop-blur-xs">
+                  {activeAnnouncements.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        idx === safeIndex
+                          ? 'w-5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]'
+                          : 'w-1.5 bg-white/40 hover:bg-white/70'
+                      }`}
+                      aria-label={`Jump to announcement ${idx + 1}`}
+                    />
+                  ))}
+                </div>
 
-          {current.priority !== 'URGENT' && (
-            <button
-              onClick={() => handleDismiss(current.id)}
-              className="p-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition focus:outline-hidden"
-              aria-label="Dismiss announcement"
-              title="Dismiss announcement for this session"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+                {/* Prev / Next Arrows */}
+                <div className="flex items-center gap-1 bg-black/15 rounded-lg p-0.5 border border-white/20 text-white backdrop-blur-xs">
+                  <button
+                    onClick={prevAnnouncement}
+                    className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
+                    aria-label="Previous announcement"
+                    title="Previous"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="px-1 text-[11px] font-semibold tabular-nums select-none text-white/90">
+                    {safeIndex + 1}/{activeAnnouncements.length}
+                  </span>
+                  <button
+                    onClick={nextAnnouncement}
+                    className="p-1 rounded hover:bg-white/20 transition focus:outline-hidden"
+                    aria-label="Next announcement"
+                    title="Next"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Dismiss button */}
+            {current.priority !== 'URGENT' && (
+              <button
+                onClick={() => handleDismiss(current.id)}
+                className="p-1.5 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition focus:outline-hidden"
+                aria-label="Dismiss announcement"
+                title="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

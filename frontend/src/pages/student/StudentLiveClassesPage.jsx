@@ -20,8 +20,10 @@ import {
   Tv,
 } from 'lucide-react';
 import api from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function StudentLiveClassesPage() {
+  const { t } = useLanguage();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,11 +89,11 @@ export default function StudentLiveClassesPage() {
   return (
     <DashboardLayout>
       <PageHeader
-        title="Live Classes"
-        subtitle="Join interactive live sessions with your teacher and classmates for your enrolled subjects."
+        title={t('navLiveClasses')}
+        subtitle={t('cardLiveDesc')}
         breadcrumbs={[
-          { label: 'Student', href: '/student/dashboard' },
-          { label: 'Live Classes' },
+          { label: t('roleStudent'), href: '/student/dashboard' },
+          { label: t('navLiveClasses') },
         ]}
       />
 
