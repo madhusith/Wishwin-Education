@@ -1,11 +1,11 @@
 -- Wishwin LMS Seed Data
 
--- Grades (Step B2)
+-- Grades (3 Categories: Grade 04, Grade 05, Quiz Class)
 INSERT INTO grades (id, name, description) VALUES
-(1, 'Grade 3', 'Grade 3 primary education and foundation courses'),
-(2, 'Grade 4', 'Grade 4 primary education and skills development'),
-(3, 'Grade 5', 'Grade 5 scholarship preparation and advanced learning')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+(2, 'Grade 04', 'Grade 04 primary scholarship education and skills development'),
+(3, 'Grade 05', 'Grade 05 scholarship preparation and advanced learning'),
+(4, 'Quiz Class', 'Online Quiz practice tests and assessments')
+ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description);
 
 -- Users (Admin, Teacher, Student, Parent)
 -- Passwords:
@@ -20,14 +20,20 @@ INSERT INTO users (id, first_name, last_name, email, phone, password_hash, role,
 (4, 'Sunil', 'Silva', 'parent@wishwin.edu', '0774455667', '$2b$10$qSsJvLF0s4YQKc918Ms2Lu7559bE4EuyCqntgdUctJqr8dH9wcF8O', 'PARENT', 'ACTIVE')
 ON DUPLICATE KEY UPDATE email=VALUES(email);
 
--- Demo Class
+-- Classes under Grade 04, Grade 05, and Quiz Class
 INSERT INTO classes (id, grade_id, name, teacher_id, description, status) VALUES
-(1, 3, 'Grade 5 Scholarship Mathematics', 2, 'Comprehensive mathematics and problem-solving class for Grade 5 scholarship students', 'ACTIVE')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+(2, 2, 'Special Paper Part 01', 2, 'Grade 04 Special Paper Part 01', 'ACTIVE'),
+(3, 2, 'Special Paper Part 02', 2, 'Grade 04 Special Paper Part 02', 'ACTIVE'),
+(4, 3, 'Special Paper Part 01', 2, 'Grade 05 Special Paper Part 01', 'ACTIVE'),
+(5, 3, 'Special Paper Part 02', 2, 'Grade 05 Special Paper Part 02', 'ACTIVE'),
+(6, 4, 'Quiz Practice Class', 2, 'Online MCQ practice quizzes', 'ACTIVE')
+ON DUPLICATE KEY UPDATE name=VALUES(name), grade_id=VALUES(grade_id);
 
--- Enrollment
-INSERT INTO enrollments (id, student_id, class_id, status) VALUES
-(1, 3, 1, 'ACTIVE')
+-- Enrollment (demo student Nimal Silva in Grade 05 Part 01 & Part 02 & Quiz Class)
+INSERT INTO enrollments (student_id, class_id, status) VALUES
+(3, 4, 'ACTIVE'),
+(3, 5, 'ACTIVE'),
+(3, 6, 'ACTIVE')
 ON DUPLICATE KEY UPDATE status=VALUES(status);
 
 -- Initial Announcements

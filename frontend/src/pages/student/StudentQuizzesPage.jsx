@@ -117,7 +117,7 @@ export default function StudentQuizzesPage() {
             <option value="">All Enrolled Classes</option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name}
+                {c.gradeName ? `${c.gradeName} • ${c.name}` : c.name}
               </option>
             ))}
           </select>

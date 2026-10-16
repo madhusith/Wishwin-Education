@@ -12,7 +12,7 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'STUDENT',
+    role: 'PARENT',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +31,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-    const { firstName, lastName, email, phone, password, confirmPassword, role } = formData;
+    const { firstName, lastName, email, phone, password, confirmPassword } = formData;
 
     if (!firstName || !lastName || !email || !password) {
       setError('Please complete all required fields.');
@@ -56,10 +56,10 @@ export default function RegisterPage() {
         email,
         phone,
         password,
-        role,
+        role: 'PARENT',
       });
 
-      const targetPath = getRoleDashboardPath(user.role);
+      const targetPath = getRoleDashboardPath(user.role || 'PARENT');
       navigate(targetPath, { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed. Please check your details.';
@@ -75,17 +75,29 @@ export default function RegisterPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-400/30 text-white shadow-xl mb-3 backdrop-blur-sm">
           <GraduationCap className="w-9 h-9 text-sky-400" />
         </div>
-        <h2 className="text-3xl font-extrabold text-white tracking-tight">Create an Account</h2>
+        <h2 className="text-3xl font-extrabold text-white tracking-tight">Parent Registration</h2>
         <p className="mt-1 text-sm text-sky-200">
-          Join Wishwin Education Center's Learning Platform
+          Create a parent account to manage and enroll your children
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-lg px-4 sm:px-0">
         <div className="bg-white py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-100">
           <div className="mb-5">
-            <h3 className="text-xl font-bold text-slate-900">Registration</h3>
-            <p className="text-xs text-slate-500 mt-1">Select your account type and fill in your details</p>
+            <h3 className="text-xl font-bold text-slate-900">Create Parent Profile</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Once registered, you can add student profiles and passwords for your children from the dashboard.
+            </p>
+          </div>
+
+          {/* Student Notice Banner */}
+          <div className="mb-4 p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-1">
+            <span className="font-bold flex items-center gap-1.5 text-blue-800">
+              ℹ️ Student Notice:
+            </span>
+            <p className="text-slate-600 leading-relaxed">
+              Students cannot self-register. Parents create their children's login credentials and select their class categories (Grade 04, Grade 05, Quiz Class) directly inside the Parent Portal.
+            </p>
           </div>
 
           {error && (
@@ -96,36 +108,6 @@ export default function RegisterPage() {
           )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {/* Role Selection */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Registering As:
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData((p) => ({ ...p, role: 'STUDENT' }))}
-                  className={`flex items-center justify-center py-2.5 px-3 rounded-xl border font-medium text-sm transition ${
-                    formData.role === 'STUDENT'
-                      ? 'border-blue-600 bg-blue-50/70 text-blue-800 font-semibold shadow-sm ring-1 ring-blue-600'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🎒 Student
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData((p) => ({ ...p, role: 'PARENT' }))}
-                  className={`flex items-center justify-center py-2.5 px-3 rounded-xl border font-medium text-sm transition ${
-                    formData.role === 'PARENT'
-                      ? 'border-blue-600 bg-blue-50/70 text-blue-800 font-semibold shadow-sm ring-1 ring-blue-600'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  👨‍👩‍👧 Parent
-                </button>
-              </div>
-            </div>
 
             {/* Names */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
