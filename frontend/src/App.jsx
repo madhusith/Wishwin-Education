@@ -14,11 +14,13 @@ import StudentRecordingsPage from './pages/student/StudentRecordingsPage';
 import StudentMaterialsPage from './pages/student/StudentMaterialsPage';
 import StudentQuizzesPage from './pages/student/StudentQuizzesPage';
 import StudentQuizAttemptPage from './pages/student/StudentQuizAttemptPage';
+import StudentAnnouncementsPage from './pages/student/StudentAnnouncementsPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
 import TeacherRecordingsPage from './pages/teacher/TeacherRecordingsPage';
 import TeacherMaterialsPage from './pages/teacher/TeacherMaterialsPage';
 import TeacherQuizzesPage from './pages/teacher/TeacherQuizzesPage';
+import TeacherAnnouncementsPage from './pages/teacher/TeacherAnnouncementsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
@@ -120,6 +122,14 @@ export default function App() {
             path="/student/results"
             element={<Navigate to="/student/quizzes" replace />}
           />
+          <Route
+            path="/student/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentAnnouncementsPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -167,6 +177,14 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['TEACHER']}>
                 <TeacherQuizzesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherAnnouncementsPage />
               </ProtectedRoute>
             }
           />
