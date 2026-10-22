@@ -16,9 +16,11 @@ import {
   ArrowRight,
   Sparkles,
   Award,
+  CreditCard,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import MockPaymentGatewayModal from '../../components/MockPaymentGatewayModal';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -29,25 +31,31 @@ export default function StudentDashboard() {
   const [recordings, setRecordings] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [user?.id]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [liveRes, matRes, recRes, quizRes] = await Promise.allSettled([
+      const [liveRes, matRes, recRes, quizRes, payRes] = await Promise.allSettled([
         api.get('/live-classes'),
         api.get('/materials'),
         api.get('/recordings'),
         api.get('/quizzes'),
+        user?.id ? api.get(`/payments/status/${user.id}`) : Promise.resolve(null),
       ]);
 
       if (liveRes.status === 'fulfilled') setLiveSessions(liveRes.value.data?.data || []);
       if (matRes.status === 'fulfilled') setMaterials(matRes.value.data?.data || []);
       if (recRes.status === 'fulfilled') setRecordings(recRes.value.data?.data || []);
       if (quizRes.status === 'fulfilled') setQuizzes(quizRes.value.data?.data || []);
+      if (payRes.status === 'fulfilled' && payRes.value?.data?.data) {
+        setPaymentStatus(payRes.value.data.data);
+      }
     } catch (err) {
       console.error('Failed to load student dashboard feeds:', err);
     } finally {
@@ -72,6 +80,61 @@ export default function StudentDashboard() {
           </span>
         }
       />
+
+      {/* Monthly Class Access & Renewal Banner */}
+      <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              paymentStatus?.isPaid
+                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                : 'bg-amber-50 text-amber-600 border border-amber-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900">Monthly Class Pass:</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  paymentStatus?.isPaid
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {paymentStatus?.isPaid ? 'ACTIVE • PAID' : 'RENEWAL DUE'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {paymentStatus?.isPaid && paymentStatus.validUntil ? (
+                <>
+                  Valid through <strong className="text-slate-800">{paymentStatus.validUntil}</strong>{' '}
+                  &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
+                </>
+              ) : (
+                <>
+                  Every class expires monthly. Active students must renew by the{' '}
+                  <strong className="text-amber-800">2nd week of each month (14th)</strong>.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsPaymentModalOpen(true)}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-2xs ${
+            paymentStatus?.isPaid
+              ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs'
+          }`}
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          <span>{paymentStatus?.isPaid ? 'Renew / View Gateway' : 'Pay Monthly Fee (Mock)'}</span>
+        </button>
+      </div>
 
       {/* Next Upcoming Live Class Spotlight (Phase K) */}
       {nextLiveClass && (
@@ -295,6 +358,18 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Mock Payment Gateway Modal */}
+      {user && (
+        <MockPaymentGatewayModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          student={{ id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email }}
+          categories={[2, 3, 4]}
+          purpose="MONTHLY_RENEWAL"
+          onSuccess={fetchDashboardData}
+        />
+      )}
     </DashboardLayout>
   );
 }

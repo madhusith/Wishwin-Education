@@ -11,6 +11,7 @@ const recordedLessonRoutes = require('./routes/recordedLessonRoutes');
 const materialRoutes = require('./routes/materialRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const parentRoutes = require('./routes/parentRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -65,5 +66,6 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/learning-materials', materialRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/parent', parentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 module.exports = app;

@@ -13,6 +13,7 @@ import {
   X,
   UserCheck,
   User,
+  UserPlus,
   BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -51,6 +52,7 @@ export default function Sidebar({ isOpen, onClose }) {
     ],
     PARENT: [
       { labelKey: 'navOverview', defaultLabel: 'Overview', path: '/parent/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navManageStudents', defaultLabel: 'Manage Students', path: '/parent/manage-students', icon: UserPlus },
       { labelKey: 'navStudentDetails', defaultLabel: 'Student Details', path: '/parent/student-details', icon: User },
       { labelKey: 'navAcademicStatus', defaultLabel: 'Academic Status', path: '/parent/status', icon: BarChart3 },
       { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/parent/classes', icon: Video },

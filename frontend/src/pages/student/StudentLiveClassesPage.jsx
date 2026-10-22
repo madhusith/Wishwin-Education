@@ -18,15 +18,23 @@ import {
   Volume2,
   Mic,
   Tv,
+  CreditCard,
 } from 'lucide-react';
 import api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
+import MockPaymentGatewayModal from '../../components/MockPaymentGatewayModal';
 
 export default function StudentLiveClassesPage() {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Payment Status & Mock Gateway Modal
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Active Live Classroom Modal
   const [activeSession, setActiveSession] = useState(null);
@@ -38,9 +46,15 @@ export default function StudentLiveClassesPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get('/live-classes');
-      if (res.data?.data) {
-        setSessions(res.data.data);
+      const [res, payRes] = await Promise.allSettled([
+        api.get('/live-classes'),
+        user?.id ? api.get(`/payments/status/${user.id}`) : Promise.resolve(null),
+      ]);
+      if (res.status === 'fulfilled' && res.value?.data?.data) {
+        setSessions(res.value.data.data);
+      }
+      if (payRes.status === 'fulfilled' && payRes.value?.data?.data) {
+        setPaymentStatus(payRes.value.data.data);
       }
     } catch (err) {
       console.error('Failed to load student live classes:', err);
@@ -52,7 +66,7 @@ export default function StudentLiveClassesPage() {
 
   useEffect(() => {
     fetchLiveClasses();
-  }, []);
+  }, [user?.id]);
 
   const handleJoinClass = async (session) => {
     try {
@@ -98,6 +112,61 @@ export default function StudentLiveClassesPage() {
       />
 
       {error && <ErrorMessage message={error} onRetry={fetchLiveClasses} className="mb-4" />}
+
+      {/* Monthly Class Access & Renewal Banner */}
+      <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              paymentStatus?.isPaid
+                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                : 'bg-amber-50 text-amber-600 border border-amber-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900">Monthly Class Pass:</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  paymentStatus?.isPaid
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {paymentStatus?.isPaid ? 'ACTIVE • PAID' : 'RENEWAL DUE'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {paymentStatus?.isPaid && paymentStatus.validUntil ? (
+                <>
+                  Valid through <strong className="text-slate-800">{paymentStatus.validUntil}</strong>{' '}
+                  &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
+                </>
+              ) : (
+                <>
+                  Every class expires monthly. Active students must renew by the{' '}
+                  <strong className="text-amber-800">2nd week of each month (14th)</strong>.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsPaymentModalOpen(true)}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-2xs ${
+            paymentStatus?.isPaid
+              ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs'
+          }`}
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          <span>{paymentStatus?.isPaid ? 'Renew / View Gateway' : 'Pay Monthly Fee (Mock)'}</span>
+        </button>
+      </div>
 
       {/* LIVE NOW SPOTLIGHT (if active) */}
       {liveNow.length > 0 && (
@@ -312,6 +381,18 @@ export default function StudentLiveClassesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mock Payment Gateway Modal */}
+      {user && (
+        <MockPaymentGatewayModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          student={{ id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email }}
+          categories={[2, 3, 4]}
+          purpose="MONTHLY_RENEWAL"
+          onSuccess={fetchLiveClasses}
+        />
       )}
     </DashboardLayout>
   );
