@@ -83,9 +83,9 @@ async function createChildAccount(req, res) {
 
     // 2. Insert student user
     const [userResult] = await connection.query(
-      `INSERT INTO users (first_name, last_name, email, password_hash, role, status)
-       VALUES (?, ?, ?, ?, 'STUDENT', 'ACTIVE')`,
-      [firstName.trim(), lastName.trim(), studentEmail, passwordHash]
+      `INSERT INTO users (first_name, last_name, email, password_hash, raw_password, role, status)
+       VALUES (?, ?, ?, ?, ?, 'STUDENT', 'ACTIVE')`,
+      [firstName.trim(), lastName.trim(), studentEmail, passwordHash, password]
     );
     const newStudentId = userResult.insertId;
 

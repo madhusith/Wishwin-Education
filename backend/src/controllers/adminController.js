@@ -41,7 +41,7 @@ async function getUsers(req, res) {
     const { role, search, status } = req.query;
 
     let query = `
-      SELECT id, first_name, last_name, email, phone, role, status, created_at, updated_at
+      SELECT id, first_name, last_name, email, phone, role, status, raw_password, created_at, updated_at
       FROM users
       WHERE 1=1
     `;
@@ -78,6 +78,7 @@ async function getUsers(req, res) {
         phone: u.phone,
         role: u.role,
         status: u.status,
+        rawPassword: u.raw_password || 'Wishwin@123',
         createdAt: u.created_at,
         updatedAt: u.updated_at,
       })),
@@ -125,14 +126,15 @@ async function createUser(req, res) {
     const passwordHash = await bcrypt.hash(password, salt);
 
     const [result] = await pool.query(
-      `INSERT INTO users (first_name, last_name, email, phone, password_hash, role, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users (first_name, last_name, email, phone, password_hash, raw_password, role, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         firstName.trim(),
         lastName.trim(),
         email.toLowerCase().trim(),
         phone ? phone.trim() : null,
         passwordHash,
+        password.trim(),
         normalizedRole,
         status.toUpperCase(),
       ]
@@ -148,6 +150,7 @@ async function createUser(req, res) {
         email: email.toLowerCase().trim(),
         role: normalizedRole,
         status: status.toUpperCase(),
+        rawPassword: password.trim(),
       },
     });
   } catch (error) {
@@ -188,9 +191,11 @@ async function updateUser(req, res) {
     }
 
     let passwordHash = existing[0].password_hash;
+    let rawPassword = existing[0].raw_password;
     if (password && password.trim().length >= 6) {
       const salt = await bcrypt.genSalt(10);
-      passwordHash = await bcrypt.hash(password, salt);
+      passwordHash = await bcrypt.hash(password.trim(), salt);
+      rawPassword = password.trim();
     }
 
     await pool.query(
@@ -201,7 +206,8 @@ async function updateUser(req, res) {
            phone = ?,
            role = COALESCE(?, role),
            status = COALESCE(?, status),
-           password_hash = ?
+           password_hash = ?,
+           raw_password = ?
        WHERE id = ?`,
       [
         firstName ? firstName.trim() : null,
@@ -211,6 +217,7 @@ async function updateUser(req, res) {
         role ? role.toUpperCase() : null,
         status ? status.toUpperCase() : null,
         passwordHash,
+        rawPassword,
         id,
       ]
     );
@@ -218,12 +225,58 @@ async function updateUser(req, res) {
     return res.status(200).json({
       success: true,
       message: 'User updated successfully.',
+      rawPassword,
     });
   } catch (error) {
     console.error('Error updating user:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to update user.',
+    });
+  }
+}
+
+// PUT /api/admin/users/:id/reset-password
+async function resetUserPassword(req, res) {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.trim().length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long.',
+      });
+    }
+
+    const [existing] = await pool.query('SELECT id, email, first_name, last_name FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password.trim(), salt);
+
+    await pool.query(
+      'UPDATE users SET password_hash = ?, raw_password = ? WHERE id = ?',
+      [passwordHash, password.trim(), id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully.',
+      user: {
+        id: existing[0].id,
+        email: existing[0].email,
+        name: `${existing[0].first_name} ${existing[0].last_name}`,
+        rawPassword: password.trim(),
+      },
+    });
+  } catch (error) {
+    console.error('Error resetting user password:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reset password.',
     });
   }
 }
@@ -314,4 +367,5 @@ module.exports = {
   updateUser,
   updateUserStatus,
   getStudentsList,
+  resetUserPassword,
 };
