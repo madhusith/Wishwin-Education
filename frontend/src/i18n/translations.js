@@ -32,6 +32,7 @@ export const translations = {
     navChildClasses: 'Child Classes',
     navManageStudents: 'Manage Students',
     navPaymentStatus: 'Payment Status',
+    navPayments: 'Payments & Approvals',
 
     // Common Actions
     actionCreate: 'Create',
@@ -204,6 +205,7 @@ export const translations = {
     navChildClasses: 'දරුවාගේ පන්ති',
     navManageStudents: 'සිසුන් කළමනාකරණය',
     navPaymentStatus: 'ගෙවීම් තත්ත්වය',
+    navPayments: 'ගෙවීම් සහ අනුමැතිය',
 
     // Common Actions
     actionCreate: 'සාදන්න',

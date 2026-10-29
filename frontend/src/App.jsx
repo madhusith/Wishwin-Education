@@ -26,6 +26,7 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
 import AdminEnrollmentsPage from './pages/admin/AdminEnrollmentsPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
 import ParentDashboard from './pages/parent/ParentDashboard';
 import ParentManageStudentsPage from './pages/parent/ParentManageStudentsPage';
 import ParentClassesPage from './pages/parent/ParentClassesPage';
@@ -229,6 +230,14 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminAnnouncementsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminPaymentsPage />
               </ProtectedRoute>
             }
           />

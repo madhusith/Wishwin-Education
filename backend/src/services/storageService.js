@@ -2,10 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
-// Ensure local uploads directory exists
+// Ensure local uploads directories exist
 const UPLOADS_DIR = path.join(__dirname, '../../uploads/materials');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const RECEIPTS_DIR = path.join(__dirname, '../../uploads/receipts');
+if (!fs.existsSync(RECEIPTS_DIR)) {
+  fs.mkdirSync(RECEIPTS_DIR, { recursive: true });
 }
 
 const isS3Configured = Boolean(
@@ -100,8 +105,51 @@ async function deleteMaterialFile(fileKey) {
   }
 }
 
+/**
+ * Upload a payment receipt file (image or PDF)
+ * @param {Object} file - Multer file object
+ * @returns {Promise<{ fileUrl: string, fileKey: string, sizeBytes: number }>}
+ */
+async function uploadReceiptFile(file) {
+  const timestamp = Date.now();
+  const sanitizedOriginalName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const fileKey = `receipts/${timestamp}-${sanitizedOriginalName}`;
+
+  if (isS3Configured && s3Client) {
+    const command = new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: fileKey,
+      Body: file.buffer,
+      ContentType: file.mimetype || 'image/jpeg',
+    });
+
+    await s3Client.send(command);
+
+    const fileUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+    return {
+      fileUrl,
+      fileKey,
+      sizeBytes: file.size,
+    };
+  }
+
+  // Local Storage Fallback for Receipts
+  const localFileName = `${timestamp}-${sanitizedOriginalName}`;
+  const localFilePath = path.join(RECEIPTS_DIR, localFileName);
+
+  await fs.promises.writeFile(localFilePath, file.buffer);
+
+  const fileUrl = `/uploads/receipts/${localFileName}`;
+  return {
+    fileUrl,
+    fileKey: localFileName,
+    sizeBytes: file.size,
+  };
+}
+
 module.exports = {
   uploadMaterialFile,
   deleteMaterialFile,
+  uploadReceiptFile,
   isS3Configured,
 };

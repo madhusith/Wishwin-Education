@@ -95,26 +95,42 @@ export default function MockPaymentGatewayModal({
       if (paymentMethod === 'CARD') {
         setProcessingStep('Authorizing card with issuing bank...');
       } else {
-        setProcessingStep('Uploading and verifying payment receipt...');
+        setProcessingStep('Uploading and submitting bank deposit slip...');
       }
       await new Promise((r) => setTimeout(r, 650));
 
-      const payload = {
-        studentId: student?.id,
-        categories: categories,
-        amount: calculatedTotal,
-        paymentMethod: paymentMethod === 'CARD' ? 'MOCK_CARD' : 'MOCK_BANK_RECEIPT',
-        cardLast4: paymentMethod === 'CARD' ? cardForm.rawCardNumber.slice(-4) : 'SLIP',
-        notes: `${purpose} - ${
-          paymentMethod === 'CARD'
-            ? 'Card Checkout'
-            : receiptFile ? `Receipt: ${receiptFile.name}` : `Ref: ${bankRef}`
-        }`,
-      };
+      let res;
+      if (paymentMethod === 'RECEIPT' && receiptFile) {
+        const formData = new FormData();
+        formData.append('studentId', student?.id);
+        formData.append('categories', JSON.stringify(categories));
+        formData.append('amount', calculatedTotal);
+        formData.append('paymentMethod', 'MOCK_BANK_RECEIPT');
+        formData.append('receipt', receiptFile);
+        formData.append(
+          'notes',
+          `${purpose} - Bank Slip Upload (${receiptFile.name})${bankRef ? ' Ref: ' + bankRef : ''}`
+        );
+        res = await api.post('/payments/mock-charge', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } else {
+        const payload = {
+          studentId: student?.id,
+          categories: categories,
+          amount: calculatedTotal,
+          paymentMethod: paymentMethod === 'CARD' ? 'MOCK_CARD' : 'MOCK_BANK_RECEIPT',
+          cardLast4: paymentMethod === 'CARD' ? cardForm.rawCardNumber.slice(-4) : 'SLIP',
+          notes: `${purpose} - ${
+            paymentMethod === 'CARD'
+              ? 'Card Checkout'
+              : `Bank Transfer Ref: ${bankRef || 'Manual'}`
+          }`,
+        };
+        res = await api.post('/payments/mock-charge', payload);
+      }
 
-      const res = await api.post('/payments/mock-charge', payload);
       const data = res.data.data;
-
       setReceipt(data);
       if (onSuccess) {
         onSuccess(data);
@@ -140,6 +156,8 @@ export default function MockPaymentGatewayModal({
     setIsProcessing(false);
     onClose();
   };
+
+  const isPendingApproval = receipt?.paymentStatus === 'PENDING';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
@@ -170,20 +188,46 @@ export default function MockPaymentGatewayModal({
         {/* Modal Body */}
         <div className="p-5">
           {receipt ? (
-            /* SUCCESS RECEIPT VIEW */
+            /* SUCCESS / PENDING RECEIPT VIEW */
             <div className="text-center space-y-3.5">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-7 h-7" />
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto ${
+                  isPendingApproval
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-emerald-100 text-emerald-600'
+                }`}
+              >
+                {isPendingApproval ? (
+                  <FileText className="w-7 h-7" />
+                ) : (
+                  <CheckCircle2 className="w-7 h-7" />
+                )}
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Payment Successful!</h3>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {isPendingApproval ? 'Slip Uploaded Successfully!' : 'Payment Successful!'}
+                </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Monthly class pass has been activated for {student?.name || 'student'}.
+                  {isPendingApproval
+                    ? `Receipt submitted for ${student?.name || 'student'}. Pending Admin verification & approval.`
+                    : `Monthly class pass has been activated for ${student?.name || 'student'}.`}
                 </p>
               </div>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-2 text-left">
+                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200">
+                  <span className="text-slate-500">Status:</span>
+                  <span
+                    className={`font-bold px-2 py-0.5 rounded text-[11px] ${
+                      isPendingApproval
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    }`}
+                  >
+                    {isPendingApproval ? 'PENDING APPROVAL' : 'COMPLETED'}
+                  </span>
+                </div>
                 <div className="flex justify-between items-center pb-1.5 border-b border-slate-200">
                   <span className="text-slate-500">Receipt Ref:</span>
                   <span className="font-mono font-bold text-blue-700">{receipt.transactionId}</span>
@@ -193,12 +237,12 @@ export default function MockPaymentGatewayModal({
                   <strong className="text-slate-900">{student?.name || 'Student'}</strong>
                 </div>
                 <div className="flex justify-between items-center pb-1.5 border-b border-slate-200">
-                  <span className="text-slate-500">Amount Paid:</span>
+                  <span className="text-slate-500">Amount:</span>
                   <strong className="text-emerald-700 font-bold">LKR {receipt.amount?.toLocaleString()}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Valid Date:</span>
-                  <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="text-slate-500">Target Valid Date:</span>
+                  <span className="font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
                     {formatValidDate(receipt.validUntil)}
                   </span>
                 </div>

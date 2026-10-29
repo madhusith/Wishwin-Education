@@ -32,6 +32,7 @@ export default function Sidebar({ isOpen, onClose }) {
       { labelKey: 'navUserManagement', defaultLabel: 'User Management', path: '/admin/users', icon: Users },
       { labelKey: 'navClassManagement', defaultLabel: 'Class Management', path: '/admin/classes', icon: BookOpen },
       { labelKey: 'navEnrollments', defaultLabel: 'Enrollments', path: '/admin/enrollments', icon: UserCheck },
+      { labelKey: 'navPayments', defaultLabel: 'Payments', path: '/admin/payments', icon: CreditCard },
       { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/admin/announcements', icon: Bell },
     ],
     TEACHER: [
