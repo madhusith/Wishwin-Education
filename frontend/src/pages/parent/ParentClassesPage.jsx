@@ -8,11 +8,18 @@ import { BookOpen, User, Calendar, Mail, Settings, Plus } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import api from '../../services/api';
 import ManageStudentClassesModal from '../../components/ManageStudentClassesModal';
+import ChildSelector from '../../components/ChildSelector';
 
 export default function ParentClassesPage() {
   const { t } = useLanguage();
   const [data, setData] = useState(null);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(() => {
+    try {
+      return localStorage.getItem('wishwin_parent_selected_child_id') || '';
+    } catch (e) {
+      return '';
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isManageClassesOpen, setIsManageClassesOpen] = useState(false);
@@ -65,22 +72,13 @@ export default function ParentClassesPage() {
 
       {error && <ErrorMessage message={error} onRetry={fetchData} className="mb-4" />}
 
-      {/* Child Switcher (if multiple children) */}
-      {childrenList.length > 1 && (
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-3 text-xs mb-5 shadow-2xs">
-          <span className="font-semibold text-slate-500">{t('parentSelectChild', 'Select Child')}:</span>
-          <select
-            value={selectedStudentId || child?.id}
-            onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          >
-            {childrenList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.email})
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Child Switcher Dropdown */}
+      {childrenList.length > 0 && (
+        <ChildSelector
+          childrenList={childrenList}
+          selectedChildId={selectedStudentId || child?.id}
+          onSelect={(newId) => setSelectedStudentId(String(newId))}
+        />
       )}
 
       {loading ? (

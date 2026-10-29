@@ -24,11 +24,19 @@ import api from '../../services/api';
 import ManageStudentClassesModal from '../../components/ManageStudentClassesModal';
 import CreateStudentAccountModal from '../../components/CreateStudentAccountModal';
 import MockPaymentGatewayModal from '../../components/MockPaymentGatewayModal';
+import { formatValidDate } from '../../utils/dateUtils';
+import ChildSelector from '../../components/ChildSelector';
 
 export default function ParentManageStudentsPage() {
   const { t } = useLanguage();
   const [data, setData] = useState(null);
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(() => {
+    try {
+      return localStorage.getItem('wishwin_parent_selected_child_id') || '';
+    } catch (e) {
+      return '';
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -115,24 +123,13 @@ export default function ParentManageStudentsPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Child Switcher Strip (if parent has multiple children) */}
-          {childrenList.length > 1 && (
-            <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
-              <span className="font-semibold text-slate-600">
-                {t('parentSelectChild', 'Select Child to Manage')}:
-              </span>
-              <select
-                value={selectedStudentId || child.id}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                {childrenList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.email})
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Child Switcher Dropdown */}
+          {childrenList.length > 0 && (
+            <ChildSelector
+              childrenList={childrenList}
+              selectedChildId={selectedStudentId || child.id}
+              onSelect={(newId) => setSelectedStudentId(String(newId))}
+            />
           )}
 
           {/* Student Account Summary Card */}
@@ -158,59 +155,75 @@ export default function ParentManageStudentsPage() {
             </div>
 
             {/* Monthly Subscription & Renewal Status */}
-            <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                    paymentStatus.isPaid
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-amber-100 text-amber-800'
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <strong className="text-slate-900 font-bold">Monthly Class Fee Status:</strong>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        paymentStatus.isPaid
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
+            {(() => {
+              const currentStatus = paymentStatus.status || (paymentStatus.isPaid ? 'ACTIVE' : 'PAYMENT_NEEDED');
+              const canRenew = paymentStatus.canRenew ?? (currentStatus !== 'ACTIVE');
+              const validDateFormatted = formatValidDate(paymentStatus.validUntil);
+
+              return (
+                <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                        currentStatus === 'ACTIVE'
+                          ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                          : currentStatus === 'PAYMENT_NEEDED'
+                          ? 'bg-amber-100 text-amber-800 border-amber-200'
+                          : 'bg-rose-100 text-rose-800 border-rose-200'
                       }`}
                     >
-                      {paymentStatus.isPaid ? 'PAID & ACTIVE' : 'RENEWAL DUE'}
-                    </span>
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <strong className="text-slate-900 font-bold">Monthly Class Fee Status:</strong>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                            currentStatus === 'ACTIVE'
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                              : currentStatus === 'PAYMENT_NEEDED'
+                              ? 'bg-amber-100 text-amber-800 border-amber-200'
+                              : 'bg-rose-100 text-rose-800 border-rose-200'
+                          }`}
+                        >
+                          {currentStatus === 'ACTIVE' && t('statusActive', 'Active')}
+                          {currentStatus === 'PAYMENT_NEEDED' && t('statusPaymentNeeded', 'Payment Needed')}
+                          {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {paymentStatus.validUntil ? (
+                          <>
+                            Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
+                            &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
+                          </>
+                        ) : (
+                          <>
+                            Every class expires monthly. Active students must renew by the{' '}
+                            <strong className="text-amber-800">2nd week of each month (14th)</strong>.
+                          </>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {paymentStatus.isPaid && paymentStatus.validUntil ? (
-                      <>
-                        Access active through <strong className="text-slate-800">{paymentStatus.validUntil}</strong>{' '}
-                        &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
-                      </>
-                    ) : (
-                      <>
-                        Every class expires monthly. Active students must renew by the{' '}
-                        <strong className="text-amber-800">2nd week of each month (14th)</strong>.
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() => setIsPaymentModalOpen(true)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-2xs ${
-                  paymentStatus.isPaid
-                    ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs'
-                }`}
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>{paymentStatus.isPaid ? 'Renew / View Gateway' : 'Pay Monthly Fee (Mock)'}</span>
-              </button>
-            </div>
+                  {canRenew && (
+                    <button
+                      type="button"
+                      onClick={() => setIsPaymentModalOpen(true)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-2xs ${
+                        currentStatus === 'ACTIVE'
+                          ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>{currentStatus === 'ACTIVE' ? 'Renew for Next Month' : 'Pay Monthly Fee'}</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Enrolled Categories Spotlight */}
             <div className="p-5 space-y-4">

@@ -38,6 +38,23 @@ const CATEGORY_FEES = {
 };
 
 /**
+ * Format Date object or string as YYYY-MM-DD
+ */
+function formatDateOnly(val) {
+  if (!val) return null;
+  if (typeof val === 'string') {
+    return val.split('T')[0];
+  }
+  if (val instanceof Date) {
+    const year = val.getFullYear();
+    const month = String(val.getMonth() + 1).padStart(2, '0');
+    const day = String(val.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  return String(val);
+}
+
+/**
  * GET /api/payments/status/:studentId
  * Get monthly payment & renewal status for a student
  */
@@ -66,7 +83,7 @@ async function getPaymentStatus(req, res) {
       }
     }
 
-    // Fetch latest payment
+    // Fetch latest completed payment
     const [payments] = await pool.query(
       `SELECT * FROM payments 
        WHERE student_id = ? AND payment_status = 'COMPLETED'
@@ -83,13 +100,43 @@ async function getPaymentStatus(req, res) {
     let renewalLabel = '2nd week of every month';
 
     if (latest && latest.valid_until) {
-      const validUntilDate = new Date(latest.valid_until);
-      validUntilDate.setHours(23, 59, 59, 999);
-      if (validUntilDate >= today) {
+      validUntil = formatDateOnly(latest.valid_until);
+      renewalLabel = getRenewalLabel(validUntil);
+    }
+
+    // Status logic:
+    // ACTIVE: has valid payment and not expired and not in renewal window
+    // PAYMENT_NEEDED: has valid payment but in 1st week of month (renewal opened) or <= 7 days left, or no payment made yet
+    // PAYMENT_OVERDUE: valid until date is in the past
+    const currentDay = today.getDate();
+    const isFirstWeekOfMonth = currentDay <= 7;
+
+    let status = 'PAYMENT_NEEDED';
+    let canRenew = false;
+
+    if (!validUntil) {
+      status = 'PAYMENT_NEEDED';
+      isPaid = false;
+      canRenew = true;
+    } else {
+      const validDateObj = new Date(validUntil);
+      validDateObj.setHours(23, 59, 59, 999);
+
+      if (validDateObj < today) {
+        status = 'PAYMENT_OVERDUE';
+        isPaid = false;
+        canRenew = true;
+      } else {
         isPaid = true;
+        const daysRemaining = Math.ceil((validDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (isFirstWeekOfMonth || daysRemaining <= 7) {
+          status = 'PAYMENT_NEEDED';
+          canRenew = true;
+        } else {
+          status = 'ACTIVE';
+          canRenew = false;
+        }
       }
-      validUntil = latest.valid_until;
-      renewalLabel = getRenewalLabel(latest.valid_until);
     }
 
     // Recent 5 payments
@@ -102,18 +149,30 @@ async function getPaymentStatus(req, res) {
       [studentId]
     );
 
+    const formattedHistory = history.map((item) => ({
+      ...item,
+      valid_until: formatDateOnly(item.valid_until),
+      created_at: formatDateOnly(item.created_at),
+    }));
+
     return res.status(200).json({
       success: true,
       data: {
         studentId,
         isPaid,
-        status: isPaid ? 'ACTIVE' : 'DUE',
-        validUntil,
+        status, // 'ACTIVE' | 'PAYMENT_NEEDED' | 'PAYMENT_OVERDUE'
+        canRenew,
+        isFirstWeekOfMonth,
+        validUntil, // Clean YYYY-MM-DD
         renewalPolicy: 'Every class expires monthly. Renewal date is every 2nd week of the month.',
         renewalLabel,
         categoryFees: CATEGORY_FEES,
-        latestPayment: latest,
-        history,
+        latestPayment: latest ? {
+          ...latest,
+          valid_until: validUntil,
+          created_at: formatDateOnly(latest.created_at),
+        } : null,
+        history: formattedHistory,
       },
     });
   } catch (error) {
@@ -251,9 +310,15 @@ async function getPaymentHistory(req, res) {
       [studentId]
     );
 
+    const formatted = rows.map((r) => ({
+      ...r,
+      valid_until: formatDateOnly(r.valid_until),
+      created_at: formatDateOnly(r.created_at),
+    }));
+
     return res.status(200).json({
       success: true,
-      data: rows,
+      data: formatted,
     });
   } catch (error) {
     console.error('Error fetching payment history:', error);
@@ -271,4 +336,6 @@ module.exports = {
   getPaymentStatus,
   processMockPayment,
   getPaymentHistory,
+  formatDateOnly,
 };
+

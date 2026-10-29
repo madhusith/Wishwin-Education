@@ -15,6 +15,7 @@ import {
   User,
   UserPlus,
   BarChart3,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
@@ -56,6 +57,7 @@ export default function Sidebar({ isOpen, onClose }) {
       { labelKey: 'navStudentDetails', defaultLabel: 'Student Details', path: '/parent/student-details', icon: User },
       { labelKey: 'navAcademicStatus', defaultLabel: 'Academic Status', path: '/parent/status', icon: BarChart3 },
       { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/parent/classes', icon: Video },
+      { labelKey: 'navPaymentStatus', defaultLabel: 'Payment Status', path: '/parent/payment-status', icon: CreditCard },
       { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/parent/announcements', icon: Bell },
     ],
   };

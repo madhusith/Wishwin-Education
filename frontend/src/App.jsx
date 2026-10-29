@@ -32,6 +32,7 @@ import ParentClassesPage from './pages/parent/ParentClassesPage';
 import ParentAnnouncementsPage from './pages/parent/ParentAnnouncementsPage';
 import ParentStudentDetailsPage from './pages/parent/ParentStudentDetailsPage';
 import ParentChildStatusPage from './pages/parent/ParentChildStatusPage';
+import ParentPaymentStatusPage from './pages/parent/ParentPaymentStatusPage';
 
 // Root redirect handler
 function RootRedirect() {
@@ -272,6 +273,18 @@ export default function App() {
                 <ParentChildStatusPage />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/parent/payment-status"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentPaymentStatusPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/payments"
+            element={<Navigate to="/parent/payment-status" replace />}
           />
           <Route
             path="/parent/announcements"

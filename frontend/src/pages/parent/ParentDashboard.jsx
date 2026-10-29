@@ -23,6 +23,7 @@ import api from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import CreateStudentAccountModal from '../../components/CreateStudentAccountModal';
 import MockPaymentGatewayModal from '../../components/MockPaymentGatewayModal';
+import { formatValidDate } from '../../utils/dateUtils';
 
 export default function ParentDashboard() {
   const { user } = useAuth();
@@ -33,7 +34,13 @@ export default function ParentDashboard() {
   const [error, setError] = useState(null);
 
   // Multi-child switcher state
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState(() => {
+    try {
+      return localStorage.getItem('wishwin_parent_selected_child_id') || '';
+    } catch (e) {
+      return '';
+    }
+  });
 
   // Create Student Modal State (only used if 0 children linked)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,21 +131,23 @@ export default function ParentDashboard() {
                 {t('parentStudent')}:
               </span>
 
-              {childrenList.length > 1 ? (
-                <select
-                  value={selectedStudentId || child.id}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-900 font-bold text-sm sm:text-base rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-2xs cursor-pointer"
-                >
-                  {childrenList.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.email})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-base sm:text-lg font-bold text-slate-900">{child.name}</span>
-              )}
+              <select
+                value={selectedStudentId || child.id}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  try {
+                    localStorage.setItem('wishwin_parent_selected_child_id', val);
+                  } catch (err) {}
+                  setSelectedStudentId(val);
+                }}
+                className="bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-900 font-bold text-sm sm:text-base rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-2xs cursor-pointer"
+              >
+                {childrenList.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} {c.email ? `(${c.email.split('@')[0]})` : ''}
+                  </option>
+                ))}
+              </select>
 
               <span className="px-3 py-1 rounded-lg text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200">
                 {enrolledClasses[0]?.grade_name || 'Grade 05'}
@@ -158,61 +167,77 @@ export default function ParentDashboard() {
           </div>
 
           {/* Monthly Subscription & Renewal Status Strip */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3.5">
-              <div
-                className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                  paymentStatus.isPaid
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                    : 'bg-amber-50 text-amber-600 border border-amber-200'
-                }`}
-              >
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="font-bold text-slate-900 text-sm">Monthly Class Subscription</h4>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      paymentStatus.isPaid
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-amber-100 text-amber-800'
+          {(() => {
+            const currentStatus = paymentStatus.status || (paymentStatus.isPaid ? 'ACTIVE' : 'PAYMENT_NEEDED');
+            const canRenew = paymentStatus.canRenew ?? (currentStatus !== 'ACTIVE');
+            const validDateFormatted = formatValidDate(paymentStatus.validUntil);
+
+            return (
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
+                      currentStatus === 'ACTIVE'
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                        : currentStatus === 'PAYMENT_NEEDED'
+                        ? 'bg-amber-50 text-amber-600 border-amber-200'
+                        : 'bg-rose-50 text-rose-600 border-rose-200'
                     }`}
                   >
-                    {paymentStatus.isPaid ? 'ACTIVE • PAID' : 'RENEWAL DUE'}
-                  </span>
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-bold text-slate-900 text-sm">Monthly Class Subscription</h4>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                          currentStatus === 'ACTIVE'
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                            : currentStatus === 'PAYMENT_NEEDED'
+                            ? 'bg-amber-100 text-amber-800 border-amber-200'
+                            : 'bg-rose-100 text-rose-800 border-rose-200'
+                        }`}
+                      >
+                        {currentStatus === 'ACTIVE' && t('statusActive', 'Active')}
+                        {currentStatus === 'PAYMENT_NEEDED' && t('statusPaymentNeeded', 'Payment Needed')}
+                        {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {paymentStatus.validUntil ? (
+                        <>
+                          Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
+                          &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
+                        </>
+                      ) : (
+                        <>
+                          Every class expires monthly. Active students must renew by the{' '}
+                          <strong className="text-amber-800">2nd week of each month (14th)</strong>.
+                        </>
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  {paymentStatus.isPaid && paymentStatus.validUntil ? (
-                    <>
-                      Access active until <strong className="text-slate-800">{paymentStatus.validUntil}</strong>{' '}
-                      &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
-                    </>
-                  ) : (
-                    <>
-                      Every class expires monthly. Active students must renew by the{' '}
-                      <strong className="text-amber-800">2nd week of each month (14th)</strong>.
-                    </>
-                  )}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsPaymentModalOpen(true)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs ${
-                  paymentStatus.isPaid
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md'
-                }`}
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>{paymentStatus.isPaid ? 'Renew / Mock Gateway' : 'Pay Monthly Fee (Mock)'}</span>
-              </button>
-            </div>
-          </div>
+                {canRenew && (
+                  <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsPaymentModalOpen(true)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs ${
+                        currentStatus === 'ACTIVE'
+                          ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>{currentStatus === 'ACTIVE' ? 'Renew for Next Month' : 'Pay Monthly Fee'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Clean Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

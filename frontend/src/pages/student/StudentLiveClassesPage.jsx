@@ -23,7 +23,7 @@ import {
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
-import MockPaymentGatewayModal from '../../components/MockPaymentGatewayModal';
+import { formatValidDate } from '../../utils/dateUtils';
 
 export default function StudentLiveClassesPage() {
   const { user } = useAuth();
@@ -32,9 +32,8 @@ export default function StudentLiveClassesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Payment Status & Mock Gateway Modal
+  // Payment Status
   const [paymentStatus, setPaymentStatus] = useState(null);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Active Live Classroom Modal
   const [activeSession, setActiveSession] = useState(null);
@@ -113,60 +112,58 @@ export default function StudentLiveClassesPage() {
 
       {error && <ErrorMessage message={error} onRetry={fetchLiveClasses} className="mb-4" />}
 
-      {/* Monthly Class Access & Renewal Banner */}
-      <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-              paymentStatus?.isPaid
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                : 'bg-amber-50 text-amber-600 border border-amber-200'
-            }`}
-          >
-            <CreditCard className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-900">Monthly Class Pass:</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  paymentStatus?.isPaid
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
+      {/* Monthly Class Access & Status Banner (No Renew Button for Students) */}
+      {(() => {
+        const currentStatus = paymentStatus?.status || (paymentStatus?.isPaid ? 'ACTIVE' : 'PAYMENT_NEEDED');
+        const validDateFormatted = formatValidDate(paymentStatus?.validUntil);
+
+        return (
+          <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                  currentStatus === 'ACTIVE'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    : currentStatus === 'PAYMENT_NEEDED'
+                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                    : 'bg-rose-50 text-rose-600 border-rose-200'
                 }`}
               >
-                {paymentStatus?.isPaid ? 'ACTIVE • PAID' : 'RENEWAL DUE'}
-              </span>
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-slate-900 text-sm">Monthly Class Pass:</span>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                      currentStatus === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : currentStatus === 'PAYMENT_NEEDED'
+                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                        : 'bg-rose-100 text-rose-800 border-rose-200'
+                    }`}
+                  >
+                    {currentStatus === 'ACTIVE' && t('statusActive', 'Active')}
+                    {currentStatus === 'PAYMENT_NEEDED' && t('statusPaymentNeeded', 'Payment Needed')}
+                    {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {paymentStatus?.validUntil ? (
+                    <>
+                      Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
+                      <span className="text-slate-400 mx-1">&bull;</span>
+                      <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+                  )}
+                </p>
+              </div>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {paymentStatus?.isPaid && paymentStatus.validUntil ? (
-                <>
-                  Valid through <strong className="text-slate-800">{paymentStatus.validUntil}</strong>{' '}
-                  &bull; Next renewal: <strong className="text-blue-700">{paymentStatus.renewalLabel}</strong>
-                </>
-              ) : (
-                <>
-                  Every class expires monthly. Active students must renew by the{' '}
-                  <strong className="text-amber-800">2nd week of each month (14th)</strong>.
-                </>
-              )}
-            </p>
           </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsPaymentModalOpen(true)}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-2xs ${
-            paymentStatus?.isPaid
-              ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300'
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xs'
-          }`}
-        >
-          <CreditCard className="w-3.5 h-3.5" />
-          <span>{paymentStatus?.isPaid ? 'Renew / View Gateway' : 'Pay Monthly Fee (Mock)'}</span>
-        </button>
-      </div>
+        );
+      })()}
 
       {/* LIVE NOW SPOTLIGHT (if active) */}
       {liveNow.length > 0 && (
@@ -381,18 +378,6 @@ export default function StudentLiveClassesPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Mock Payment Gateway Modal */}
-      {user && (
-        <MockPaymentGatewayModal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          student={{ id: user.id, name: `${user.firstName} ${user.lastName}`, email: user.email }}
-          categories={[2, 3, 4]}
-          purpose="MONTHLY_RENEWAL"
-          onSuccess={fetchLiveClasses}
-        />
       )}
     </DashboardLayout>
   );

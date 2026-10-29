@@ -18,6 +18,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import api from '../services/api';
 import { CATEGORY_PRICING } from './MockPaymentGatewayModal';
+import { formatValidDate } from '../utils/dateUtils';
 
 export default function CreateStudentAccountModal({ isOpen, onClose, onSuccess }) {
   const { t } = useLanguage();
@@ -236,7 +237,7 @@ export default function CreateStudentAccountModal({ isOpen, onClose, onSuccess }
                     <div className="flex justify-between text-slate-600">
                       <span>Access Valid Until:</span>
                       <span className="font-bold text-blue-700">
-                        {createdSuccessData.paymentReceipt.validUntil} (2nd week)
+                        {formatValidDate(createdSuccessData.paymentReceipt.validUntil)}
                       </span>
                     </div>
                   </div>

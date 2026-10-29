@@ -31,6 +31,7 @@ export const translations = {
     navAcademicStatus: 'Academic Status',
     navChildClasses: 'Child Classes',
     navManageStudents: 'Manage Students',
+    navPaymentStatus: 'Payment Status',
 
     // Common Actions
     actionCreate: 'Create',
@@ -63,6 +64,8 @@ export const translations = {
 
     // Status Badges & Priority
     statusActive: 'Active',
+    statusPaymentNeeded: 'Payment Needed',
+    statusPaymentOverdue: 'Payment Overdue',
     statusInactive: 'Inactive',
     statusLiveNow: 'LIVE NOW',
     statusScheduled: 'Scheduled',
@@ -200,6 +203,7 @@ export const translations = {
     navAcademicStatus: 'අධ්‍යයන ප්‍රගතිය',
     navChildClasses: 'දරුවාගේ පන්ති',
     navManageStudents: 'සිසුන් කළමනාකරණය',
+    navPaymentStatus: 'ගෙවීම් තත්ත්වය',
 
     // Common Actions
     actionCreate: 'සාදන්න',
@@ -232,6 +236,8 @@ export const translations = {
 
     // Status Badges & Priority
     statusActive: 'ක්‍රියාකාරී',
+    statusPaymentNeeded: 'ගෙවීම් අවශ්‍යයි',
+    statusPaymentOverdue: 'ගෙවීම් ප්‍රමාදයි',
     statusInactive: 'අක්‍රිය',
     statusLiveNow: '● සජීවීව දැන්',
     statusScheduled: 'සැලසුම් කර ඇත',

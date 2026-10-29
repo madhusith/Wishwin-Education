@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
-const { getNextRenewalDate, getRenewalLabel } = require('./paymentController');
+const { getNextRenewalDate, getRenewalLabel, formatDateOnly } = require('./paymentController');
 
 // GET /api/parent/children - List all children of the logged-in parent
 async function getChildren(req, res) {
@@ -357,16 +357,46 @@ async function getChildSummary(req, res) {
     let renewalLabel = '2nd week of every month';
 
     if (latestPay && latestPay.valid_until) {
-      const validUntilDate = new Date(latestPay.valid_until);
-      validUntilDate.setHours(23, 59, 59, 999);
-      isPaid = validUntilDate >= today;
-      validUntil = latestPay.valid_until;
-      renewalLabel = getRenewalLabel(latestPay.valid_until);
+      validUntil = formatDateOnly(latestPay.valid_until);
+      renewalLabel = getRenewalLabel(validUntil);
+    }
+
+    const currentDay = today.getDate();
+    const isFirstWeekOfMonth = currentDay <= 7;
+
+    let status = 'PAYMENT_NEEDED';
+    let canRenew = false;
+
+    if (!validUntil) {
+      status = 'PAYMENT_NEEDED';
+      isPaid = false;
+      canRenew = true;
+    } else {
+      const validDateObj = new Date(validUntil);
+      validDateObj.setHours(23, 59, 59, 999);
+
+      if (validDateObj < today) {
+        status = 'PAYMENT_OVERDUE';
+        isPaid = false;
+        canRenew = true;
+      } else {
+        isPaid = true;
+        const daysRemaining = Math.ceil((validDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (isFirstWeekOfMonth || daysRemaining <= 7) {
+          status = 'PAYMENT_NEEDED';
+          canRenew = true;
+        } else {
+          status = 'ACTIVE';
+          canRenew = false;
+        }
+      }
     }
 
     const paymentStatus = {
       isPaid,
-      status: isPaid ? 'ACTIVE' : 'DUE',
+      status, // 'ACTIVE' | 'PAYMENT_NEEDED' | 'PAYMENT_OVERDUE'
+      canRenew,
+      isFirstWeekOfMonth,
       validUntil,
       renewalLabel,
       renewalNotice: 'Every class expires monthly. Renewal date is every 2nd week of each month.',
@@ -374,12 +404,13 @@ async function getChildSummary(req, res) {
         ? {
             transactionId: latestPay.transaction_id,
             amount: latestPay.amount,
-            paidAt: latestPay.created_at,
+            paidAt: formatDateOnly(latestPay.created_at),
             method: latestPay.payment_method,
             cardLast4: latestPay.card_last4,
           }
         : null,
     };
+
 
     return res.status(200).json({
       success: true,

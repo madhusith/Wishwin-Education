@@ -4,24 +4,37 @@ import PageHeader from '../../components/PageHeader';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
 import EmptyState from '../../components/EmptyState';
+import ChildSelector from '../../components/ChildSelector';
 import { Award, Video, Calendar, ExternalLink, CheckCircle, Clock } from 'lucide-react';
 import api from '../../services/api';
 
 export default function ParentChildStatusPage() {
   const [data, setData] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState(() => {
+    try {
+      return localStorage.getItem('wishwin_parent_selected_child_id') || '';
+    } catch (e) {
+      return '';
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedStudentId]);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get('/parent/child-summary');
-      setData(res.data?.data || null);
+      const params = selectedStudentId ? { studentId: selectedStudentId } : {};
+      const res = await api.get('/parent/child-summary', { params });
+      const resData = res.data?.data || null;
+      setData(resData);
+      if (resData?.child?.id && !selectedStudentId) {
+        setSelectedStudentId(String(resData.child.id));
+      }
     } catch (err) {
       console.error('Error fetching academic status:', err);
       setError('Failed to load child academic status.');
@@ -31,6 +44,7 @@ export default function ParentChildStatusPage() {
   };
 
   const child = data?.child;
+  const childrenList = data?.children || [];
   const quizAttempts = data?.quizAttempts || [];
   const liveClasses = data?.liveClasses || [];
   const stats = data?.stats || { avgScorePercentage: 0, quizzesAttemptedCount: 0 };
@@ -47,6 +61,15 @@ export default function ParentChildStatusPage() {
       />
 
       {error && <ErrorMessage message={error} onRetry={fetchData} className="mb-4" />}
+
+      {/* Child Switcher Dropdown */}
+      {childrenList.length > 0 && (
+        <ChildSelector
+          childrenList={childrenList}
+          selectedChildId={selectedStudentId || child?.id}
+          onSelect={(newId) => setSelectedStudentId(String(newId))}
+        />
+      )}
 
       {loading ? (
         <LoadingSpinner message="Loading academic status..." />
