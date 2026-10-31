@@ -13,7 +13,9 @@ import {
   X,
   UserCheck,
   User,
+  UserPlus,
   BarChart3,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
@@ -30,6 +32,7 @@ export default function Sidebar({ isOpen, onClose }) {
       { labelKey: 'navUserManagement', defaultLabel: 'User Management', path: '/admin/users', icon: Users },
       { labelKey: 'navClassManagement', defaultLabel: 'Class Management', path: '/admin/classes', icon: BookOpen },
       { labelKey: 'navEnrollments', defaultLabel: 'Enrollments', path: '/admin/enrollments', icon: UserCheck },
+      { labelKey: 'navPayments', defaultLabel: 'Payments', path: '/admin/payments', icon: CreditCard },
       { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/admin/announcements', icon: Bell },
     ],
     TEACHER: [
@@ -51,9 +54,11 @@ export default function Sidebar({ isOpen, onClose }) {
     ],
     PARENT: [
       { labelKey: 'navOverview', defaultLabel: 'Overview', path: '/parent/dashboard', icon: LayoutDashboard },
+      { labelKey: 'navManageStudents', defaultLabel: 'Manage Students', path: '/parent/manage-students', icon: UserPlus },
       { labelKey: 'navStudentDetails', defaultLabel: 'Student Details', path: '/parent/student-details', icon: User },
       { labelKey: 'navAcademicStatus', defaultLabel: 'Academic Status', path: '/parent/status', icon: BarChart3 },
       { labelKey: 'navLiveClasses', defaultLabel: 'Live Classes', path: '/parent/classes', icon: Video },
+      { labelKey: 'navPaymentStatus', defaultLabel: 'Payment Status', path: '/parent/payment-status', icon: CreditCard },
       { labelKey: 'navAnnouncements', defaultLabel: 'Announcements', path: '/parent/announcements', icon: Bell },
     ],
   };

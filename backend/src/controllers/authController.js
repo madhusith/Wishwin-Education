@@ -70,9 +70,9 @@ async function register(req, res) {
 
     // 7. Insert new user
     const [result] = await pool.query(
-      `INSERT INTO users (first_name, last_name, email, phone, password_hash, role, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE')`,
-      [firstName.trim(), lastName.trim(), email.toLowerCase().trim(), phone ? phone.trim() : null, passwordHash, normalizedRole]
+      `INSERT INTO users (first_name, last_name, email, phone, password_hash, raw_password, role, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE')`,
+      [firstName.trim(), lastName.trim(), email.toLowerCase().trim(), phone ? phone.trim() : null, passwordHash, password, normalizedRole]
     );
 
     const userId = result.insertId;

@@ -18,15 +18,22 @@ import {
   Volume2,
   Mic,
   Tv,
+  CreditCard,
 } from 'lucide-react';
 import api from '../../services/api';
+import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatValidDate } from '../../utils/dateUtils';
 
 export default function StudentLiveClassesPage() {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Payment Status
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
   // Active Live Classroom Modal
   const [activeSession, setActiveSession] = useState(null);
@@ -38,9 +45,15 @@ export default function StudentLiveClassesPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get('/live-classes');
-      if (res.data?.data) {
-        setSessions(res.data.data);
+      const [res, payRes] = await Promise.allSettled([
+        api.get('/live-classes'),
+        user?.id ? api.get(`/payments/status/${user.id}`) : Promise.resolve(null),
+      ]);
+      if (res.status === 'fulfilled' && res.value?.data?.data) {
+        setSessions(res.value.data.data);
+      }
+      if (payRes.status === 'fulfilled' && payRes.value?.data?.data) {
+        setPaymentStatus(payRes.value.data.data);
       }
     } catch (err) {
       console.error('Failed to load student live classes:', err);
@@ -52,7 +65,7 @@ export default function StudentLiveClassesPage() {
 
   useEffect(() => {
     fetchLiveClasses();
-  }, []);
+  }, [user?.id]);
 
   const handleJoinClass = async (session) => {
     try {
@@ -98,6 +111,59 @@ export default function StudentLiveClassesPage() {
       />
 
       {error && <ErrorMessage message={error} onRetry={fetchLiveClasses} className="mb-4" />}
+
+      {/* Monthly Class Access & Status Banner (No Renew Button for Students) */}
+      {(() => {
+        const currentStatus = paymentStatus?.status || (paymentStatus?.isPaid ? 'ACTIVE' : 'PAYMENT_NEEDED');
+        const validDateFormatted = formatValidDate(paymentStatus?.validUntil);
+
+        return (
+          <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                  currentStatus === 'ACTIVE'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    : currentStatus === 'PAYMENT_NEEDED'
+                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                    : 'bg-rose-50 text-rose-600 border-rose-200'
+                }`}
+              >
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-bold text-slate-900 text-sm">Monthly Class Pass:</span>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                      currentStatus === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : currentStatus === 'PAYMENT_NEEDED'
+                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                        : 'bg-rose-100 text-rose-800 border-rose-200'
+                    }`}
+                  >
+                    {currentStatus === 'ACTIVE' && t('statusActive', 'Active')}
+                    {currentStatus === 'PAYMENT_NEEDED' && t('statusPaymentNeeded', 'Payment Needed')}
+                    {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {paymentStatus?.validUntil ? (
+                    <>
+                      Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
+                      <span className="text-slate-400 mx-1">&bull;</span>
+                      <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+                    </>
+                  ) : (
+                    <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* LIVE NOW SPOTLIGHT (if active) */}
       {liveNow.length > 0 && (

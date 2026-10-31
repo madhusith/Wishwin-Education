@@ -7,6 +7,7 @@ const {
   updateUser,
   updateUserStatus,
   getStudentsList,
+  resetUserPassword,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get('/stats', getAdminStats);
 router.get('/users', getUsers);
 router.post('/users', createUser);
 router.put('/users/:id', updateUser);
+router.put('/users/:id/reset-password', resetUserPassword);
 router.patch('/users/:id/status', updateUserStatus);
 router.get('/students', getStudentsList);
 

@@ -16,9 +16,11 @@ import {
   ArrowRight,
   Sparkles,
   Award,
+  CreditCard,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { formatValidDate } from '../../utils/dateUtils';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -29,25 +31,30 @@ export default function StudentDashboard() {
   const [recordings, setRecordings] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [user?.id]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [liveRes, matRes, recRes, quizRes] = await Promise.allSettled([
+      const [liveRes, matRes, recRes, quizRes, payRes] = await Promise.allSettled([
         api.get('/live-classes'),
         api.get('/materials'),
         api.get('/recordings'),
         api.get('/quizzes'),
+        user?.id ? api.get(`/payments/status/${user.id}`) : Promise.resolve(null),
       ]);
 
       if (liveRes.status === 'fulfilled') setLiveSessions(liveRes.value.data?.data || []);
       if (matRes.status === 'fulfilled') setMaterials(matRes.value.data?.data || []);
       if (recRes.status === 'fulfilled') setRecordings(recRes.value.data?.data || []);
       if (quizRes.status === 'fulfilled') setQuizzes(quizRes.value.data?.data || []);
+      if (payRes.status === 'fulfilled' && payRes.value?.data?.data) {
+        setPaymentStatus(payRes.value.data.data);
+      }
     } catch (err) {
       console.error('Failed to load student dashboard feeds:', err);
     } finally {
@@ -61,6 +68,10 @@ export default function StudentDashboard() {
 
   const pendingQuizzes = quizzes.filter((q) => !q.myAttempt);
 
+  // Compute status helpers
+  const currentStatus = paymentStatus?.status || (paymentStatus?.isPaid ? 'ACTIVE' : 'PAYMENT_NEEDED');
+  const validDateFormatted = formatValidDate(paymentStatus?.validUntil);
+
   return (
     <DashboardLayout>
       <PageHeader
@@ -72,6 +83,52 @@ export default function StudentDashboard() {
           </span>
         }
       />
+
+      {/* Monthly Class Access & Status Banner (No Renew Button for Students) */}
+      <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-4 text-xs">
+        <div className="flex items-center gap-3.5">
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+              currentStatus === 'ACTIVE'
+                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                : currentStatus === 'PAYMENT_NEEDED'
+                ? 'bg-amber-50 text-amber-600 border-amber-200'
+                : 'bg-rose-50 text-rose-600 border-rose-200'
+            }`}
+          >
+            <CreditCard className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-slate-900 text-sm">Monthly Class Pass:</span>
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                  currentStatus === 'ACTIVE'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                    : currentStatus === 'PAYMENT_NEEDED'
+                    ? 'bg-amber-100 text-amber-800 border-amber-200'
+                    : 'bg-rose-100 text-rose-800 border-rose-200'
+                }`}
+              >
+                {currentStatus === 'ACTIVE' && t('statusActive', 'Active')}
+                {currentStatus === 'PAYMENT_NEEDED' && t('statusPaymentNeeded', 'Payment Needed')}
+                {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {paymentStatus?.validUntil ? (
+                <>
+                  Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
+                  <span className="text-slate-400 mx-1">&bull;</span>
+                  <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+                </>
+              ) : (
+                <span className="text-slate-500">Class fees and renewals are managed by your parent.</span>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Next Upcoming Live Class Spotlight (Phase K) */}
       {nextLiveClass && (

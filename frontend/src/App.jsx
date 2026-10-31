@@ -14,21 +14,26 @@ import StudentRecordingsPage from './pages/student/StudentRecordingsPage';
 import StudentMaterialsPage from './pages/student/StudentMaterialsPage';
 import StudentQuizzesPage from './pages/student/StudentQuizzesPage';
 import StudentQuizAttemptPage from './pages/student/StudentQuizAttemptPage';
+import StudentAnnouncementsPage from './pages/student/StudentAnnouncementsPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherLiveClassesPage from './pages/teacher/TeacherLiveClassesPage';
 import TeacherRecordingsPage from './pages/teacher/TeacherRecordingsPage';
 import TeacherMaterialsPage from './pages/teacher/TeacherMaterialsPage';
 import TeacherQuizzesPage from './pages/teacher/TeacherQuizzesPage';
+import TeacherAnnouncementsPage from './pages/teacher/TeacherAnnouncementsPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminClassesPage from './pages/admin/AdminClassesPage';
 import AdminEnrollmentsPage from './pages/admin/AdminEnrollmentsPage';
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
 import ParentDashboard from './pages/parent/ParentDashboard';
+import ParentManageStudentsPage from './pages/parent/ParentManageStudentsPage';
 import ParentClassesPage from './pages/parent/ParentClassesPage';
 import ParentAnnouncementsPage from './pages/parent/ParentAnnouncementsPage';
 import ParentStudentDetailsPage from './pages/parent/ParentStudentDetailsPage';
 import ParentChildStatusPage from './pages/parent/ParentChildStatusPage';
+import ParentPaymentStatusPage from './pages/parent/ParentPaymentStatusPage';
 
 // Root redirect handler
 function RootRedirect() {
@@ -120,6 +125,14 @@ export default function App() {
             path="/student/results"
             element={<Navigate to="/student/quizzes" replace />}
           />
+          <Route
+            path="/student/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['STUDENT']}>
+                <StudentAnnouncementsPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Teacher Protected Routes */}
           <Route
@@ -170,6 +183,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/teacher/announcements"
+            element={
+              <ProtectedRoute allowedRoles={['TEACHER']}>
+                <TeacherAnnouncementsPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Protected Routes */}
           <Route
@@ -212,6 +233,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminPaymentsPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Parent Protected Routes */}
           <Route
@@ -219,6 +248,14 @@ export default function App() {
             element={
               <ProtectedRoute allowedRoles={['PARENT']}>
                 <ParentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/manage-students"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentManageStudentsPage />
               </ProtectedRoute>
             }
           />
@@ -245,6 +282,18 @@ export default function App() {
                 <ParentChildStatusPage />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/parent/payment-status"
+            element={
+              <ProtectedRoute allowedRoles={['PARENT']}>
+                <ParentPaymentStatusPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/payments"
+            element={<Navigate to="/parent/payment-status" replace />}
           />
           <Route
             path="/parent/announcements"

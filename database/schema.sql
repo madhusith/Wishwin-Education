@@ -1,5 +1,7 @@
 -- Wishwin LMS Database Schema (Phase 1)
 -- Drop existing tables if needed in reverse dependency order
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS parent_students;
 DROP TABLE IF EXISTS quiz_answers;
 DROP TABLE IF EXISTS quiz_attempts;
 DROP TABLE IF EXISTS quiz_options;
@@ -22,6 +24,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(30),
     password_hash VARCHAR(255) NOT NULL,
+    raw_password VARCHAR(255),
     role ENUM('STUDENT', 'PARENT', 'TEACHER', 'ADMIN') NOT NULL,
     status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -229,3 +232,28 @@ CREATE TABLE IF NOT EXISTS parent_students (
     CONSTRAINT fk_ps_parent FOREIGN KEY (parent_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_ps_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8.15 Monthly Payments & Subscriptions
+CREATE TABLE IF NOT EXISTS payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    payer_user_id INT NOT NULL,
+    transaction_id VARCHAR(100) NOT NULL UNIQUE,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'LKR',
+    payment_method VARCHAR(50) DEFAULT 'MOCK_CARD',
+    payment_status ENUM('COMPLETED', 'PENDING', 'REJECTED', 'FAILED') DEFAULT 'PENDING',
+    billing_month VARCHAR(20) NOT NULL,
+    valid_until DATE NOT NULL,
+    categories JSON,
+    card_last4 VARCHAR(10),
+    notes VARCHAR(255),
+    receipt_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_payments_student_id (student_id),
+    INDEX idx_payments_payer (payer_user_id),
+    INDEX idx_payments_billing_month (billing_month),
+    CONSTRAINT fk_payments_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_payments_payer FOREIGN KEY (payer_user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

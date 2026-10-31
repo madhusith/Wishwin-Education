@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
+const { getNextRenewalDate, getRenewalLabel, formatDateOnly } = require('./paymentController');
 
 // GET /api/parent/children - List all children of the logged-in parent
 async function getChildren(req, res) {
@@ -82,9 +83,9 @@ async function createChildAccount(req, res) {
 
     // 2. Insert student user
     const [userResult] = await connection.query(
-      `INSERT INTO users (first_name, last_name, email, password_hash, role, status)
-       VALUES (?, ?, ?, ?, 'STUDENT', 'ACTIVE')`,
-      [firstName.trim(), lastName.trim(), studentEmail, passwordHash]
+      `INSERT INTO users (first_name, last_name, email, password_hash, raw_password, role, status)
+       VALUES (?, ?, ?, ?, ?, 'STUDENT', 'ACTIVE')`,
+      [firstName.trim(), lastName.trim(), studentEmail, passwordHash, password]
     );
     const newStudentId = userResult.insertId;
 
@@ -113,6 +114,46 @@ async function createChildAccount(req, res) {
       );
     }
 
+    // 5. Record initial course registration payment in payments table
+    let paymentReceipt = null;
+    if (req.body.paymentDetails || req.body.paid) {
+      const pDetails = req.body.paymentDetails || {};
+      const amount = parseFloat(pDetails.amount) || (categoryIds.length * 2500);
+      const paymentMethod = pDetails.paymentMethod || 'MOCK_CARD';
+      const cardLast4 = pDetails.cardLast4 || '4242';
+      const now = new Date();
+      const billingMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const validUntil = getNextRenewalDate(now);
+      const transactionId = pDetails.transactionId || `WW-MOCK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      await connection.query(
+        `INSERT INTO payments 
+         (student_id, payer_user_id, transaction_id, amount, currency, payment_method, 
+          payment_status, billing_month, valid_until, categories, card_last4, notes)
+         VALUES (?, ?, ?, ?, 'LKR', ?, 'COMPLETED', ?, ?, ?, ?, ?)`,
+        [
+          newStudentId,
+          parentId,
+          transactionId,
+          amount,
+          paymentMethod,
+          billingMonth,
+          validUntil,
+          JSON.stringify(categoryIds),
+          cardLast4,
+          'Course Registration Fee',
+        ]
+      );
+
+      paymentReceipt = {
+        transactionId,
+        amount,
+        validUntil,
+        billingMonth,
+        renewalLabel: getRenewalLabel(validUntil),
+      };
+    }
+
     await connection.commit();
 
     return res.status(201).json({
@@ -125,6 +166,7 @@ async function createChildAccount(req, res) {
         username: cleanUsername,
         email: studentEmail,
         enrolledCount: classesToEnroll.length,
+        paymentReceipt,
       },
     });
   } catch (error) {
@@ -204,6 +246,7 @@ async function getChildSummary(req, res) {
         c.id,
         c.name AS class_name,
         c.description,
+        c.grade_id,
         g.name AS grade_name,
         e.status AS enrollment_status,
         e.enrolled_at,
@@ -298,6 +341,77 @@ async function getChildSummary(req, res) {
         : 0;
     const upcomingLiveCount = liveClasses.filter((s) => s.status === 'SCHEDULED' || s.status === 'LIVE').length;
 
+    // 6. Monthly Subscription & Payment Status (Renewal: 2nd week of each month)
+    const [latestPayments] = await pool.query(
+      `SELECT * FROM payments 
+       WHERE student_id = ? AND payment_status = 'COMPLETED'
+       ORDER BY created_at DESC LIMIT 1`,
+      [child.id]
+    );
+    const latestPay = latestPayments[0] || null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let isPaid = false;
+    let validUntil = null;
+    let renewalLabel = '2nd week of every month';
+
+    if (latestPay && latestPay.valid_until) {
+      validUntil = formatDateOnly(latestPay.valid_until);
+      renewalLabel = getRenewalLabel(validUntil);
+    }
+
+    const currentDay = today.getDate();
+    const isFirstWeekOfMonth = currentDay <= 7;
+
+    let status = 'PAYMENT_NEEDED';
+    let canRenew = false;
+
+    if (!validUntil) {
+      status = 'PAYMENT_NEEDED';
+      isPaid = false;
+      canRenew = true;
+    } else {
+      const validDateObj = new Date(validUntil);
+      validDateObj.setHours(23, 59, 59, 999);
+
+      if (validDateObj < today) {
+        status = 'PAYMENT_OVERDUE';
+        isPaid = false;
+        canRenew = true;
+      } else {
+        isPaid = true;
+        const daysRemaining = Math.ceil((validDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (isFirstWeekOfMonth || daysRemaining <= 7) {
+          status = 'PAYMENT_NEEDED';
+          canRenew = true;
+        } else {
+          status = 'ACTIVE';
+          canRenew = false;
+        }
+      }
+    }
+
+    const paymentStatus = {
+      isPaid,
+      status, // 'ACTIVE' | 'PAYMENT_NEEDED' | 'PAYMENT_OVERDUE'
+      canRenew,
+      isFirstWeekOfMonth,
+      validUntil,
+      renewalLabel,
+      renewalNotice: 'Every class expires monthly. Renewal date is every 2nd week of each month.',
+      lastPayment: latestPay
+        ? {
+            transactionId: latestPay.transaction_id,
+            amount: latestPay.amount,
+            paidAt: formatDateOnly(latestPay.created_at),
+            method: latestPay.payment_method,
+            cardLast4: latestPay.card_last4,
+          }
+        : null,
+    };
+
+
     return res.status(200).json({
       success: true,
       data: {
@@ -320,8 +434,10 @@ async function getChildSummary(req, res) {
           status: c.status,
         })),
         enrolledClasses,
+        enrolledCategoryIds: [...new Set(enrolledClasses.map((c) => c.grade_id))],
         quizAttempts,
         liveClasses,
+        paymentStatus,
         stats: {
           enrolledClassesCount: enrolledClasses.length,
           quizzesAttemptedCount: totalQuizzes,
@@ -339,8 +455,102 @@ async function getChildSummary(req, res) {
   }
 }
 
+// PUT /api/parent/children/:studentId/enrollments - Parent updates/adds enrolled categories for a child
+async function updateChildEnrollments(req, res) {
+  const connection = await pool.getConnection();
+  try {
+    const parentId = req.user.id;
+    const studentId = parseInt(req.params.studentId, 10);
+    const { categories } = req.body;
+
+    if (!studentId || isNaN(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid student ID is required.',
+      });
+    }
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select at least one class category.',
+      });
+    }
+
+    // 1. Verify parent owns child (or user is ADMIN)
+    if (req.user.role === 'PARENT') {
+      const [link] = await connection.query(
+        'SELECT 1 FROM parent_students WHERE parent_id = ? AND student_id = ?',
+        [parentId, studentId]
+      );
+      if (link.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'You are not authorized to update classes for this student.',
+        });
+      }
+    }
+
+    const categoryIds = categories.map((c) => parseInt(c, 10)).filter((n) => !isNaN(n));
+
+    // 2. Fetch all classes belonging to these selected categories
+    const [classesToEnroll] = await connection.query(
+      'SELECT id, name, grade_id FROM classes WHERE grade_id IN (?)',
+      [categoryIds]
+    );
+
+    if (classesToEnroll.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No classes found for the selected categories.',
+      });
+    }
+
+    await connection.beginTransaction();
+
+    const selectedClassIds = classesToEnroll.map((c) => c.id);
+
+    // 3. Remove enrollments for classes not in the newly selected categories
+    await connection.query(
+      'DELETE FROM enrollments WHERE student_id = ? AND class_id NOT IN (?)',
+      [studentId, selectedClassIds]
+    );
+
+    // 4. Insert or reactivate enrollments for selected classes
+    for (const c of classesToEnroll) {
+      await connection.query(
+        `INSERT INTO enrollments (student_id, class_id, status) VALUES (?, ?, 'ACTIVE')
+         ON DUPLICATE KEY UPDATE status = 'ACTIVE'`,
+        [studentId, c.id]
+      );
+    }
+
+    await connection.commit();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Student class categories and enrollments updated successfully.',
+      data: {
+        studentId,
+        enrolledCategories: categoryIds,
+        enrolledClassesCount: selectedClassIds.length,
+      },
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error updating child enrollments:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to update student enrollments.',
+    });
+  } finally {
+    connection.release();
+  }
+}
+
 module.exports = {
   getChildSummary,
   getChildren,
   createChildAccount,
+  updateChildEnrollments,
 };

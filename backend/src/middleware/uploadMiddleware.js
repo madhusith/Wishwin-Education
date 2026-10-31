@@ -23,6 +23,34 @@ const uploadPdf = multer({
   },
 });
 
+const receiptFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+  const allowedMimes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'application/pdf',
+    'application/x-pdf',
+  ];
+
+  if (allowedExts.includes(ext) || allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Please upload an image (JPG, PNG, WEBP) or PDF of your receipt.'), false);
+  }
+};
+
+const uploadReceipt = multer({
+  storage,
+  fileFilter: receiptFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB max for receipts
+  },
+});
+
 module.exports = {
   uploadPdf,
+  uploadReceipt,
 };

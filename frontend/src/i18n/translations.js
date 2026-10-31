@@ -30,6 +30,9 @@ export const translations = {
     navStudentDetails: 'Student Details',
     navAcademicStatus: 'Academic Status',
     navChildClasses: 'Child Classes',
+    navManageStudents: 'Manage Students',
+    navPaymentStatus: 'Payment Status',
+    navPayments: 'Payments & Approvals',
 
     // Common Actions
     actionCreate: 'Create',
@@ -62,6 +65,8 @@ export const translations = {
 
     // Status Badges & Priority
     statusActive: 'Active',
+    statusPaymentNeeded: 'Payment Needed',
+    statusPaymentOverdue: 'Payment Overdue',
     statusInactive: 'Inactive',
     statusLiveNow: 'LIVE NOW',
     statusScheduled: 'Scheduled',
@@ -135,6 +140,11 @@ export const translations = {
     parentGrade5Desc: 'Grade 05 (Special Paper Part 01 & 02)',
     parentQuizClassDesc: 'Quiz Class (MCQ Practice Tests)',
     parentStudentCreatedSuccess: 'Student account created successfully!',
+    parentManageClasses: 'Manage Enrolled Classes',
+    parentManageClassesDesc: 'Assign or add more classes and grades for your child (e.g., Grade 04, Grade 05, or Quiz Class).',
+    parentClassesUpdatedSuccess: 'Enrolled classes updated successfully!',
+    parentSelectAtLeastOneCategory: 'Please select at least one class category.',
+    parentEnrolledIn: 'Enrolled Classes',
 
     // Teacher & Admin Dashboard
     teacherWelcome: 'Welcome',
@@ -193,6 +203,9 @@ export const translations = {
     navStudentDetails: 'ශිෂ්‍ය තොරතුරු',
     navAcademicStatus: 'අධ්‍යයන ප්‍රගතිය',
     navChildClasses: 'දරුවාගේ පන්ති',
+    navManageStudents: 'සිසුන් කළමනාකරණය',
+    navPaymentStatus: 'ගෙවීම් තත්ත්වය',
+    navPayments: 'ගෙවීම් සහ අනුමැතිය',
 
     // Common Actions
     actionCreate: 'සාදන්න',
@@ -225,6 +238,8 @@ export const translations = {
 
     // Status Badges & Priority
     statusActive: 'ක්‍රියාකාරී',
+    statusPaymentNeeded: 'ගෙවීම් අවශ්‍යයි',
+    statusPaymentOverdue: 'ගෙවීම් ප්‍රමාදයි',
     statusInactive: 'අක්‍රිය',
     statusLiveNow: '● සජීවීව දැන්',
     statusScheduled: 'සැලසුම් කර ඇත',
@@ -298,6 +313,11 @@ export const translations = {
     parentGrade5Desc: '5 ශ්‍රේණිය (විශේෂ ප්‍රශ්න පත්‍ර 01 සහ 02 කොටස)',
     parentQuizClassDesc: 'ප්‍රශ්නාවලි පන්තිය (සාමාන්‍ය බහුවරණ පරීක්ෂණ)',
     parentStudentCreatedSuccess: 'ශිෂ්‍ය ගිණුම සාර්ථකව සාදන ලදී!',
+    parentManageClasses: 'ලියාපදිංචි පන්ති වෙනස් කරන්න',
+    parentManageClassesDesc: 'ඔබේ දරුවා සඳහා තවත් පන්ති හෝ ශ්‍රේණි එකතු කරන්න (උදා: 4 ශ්‍රේණිය, 5 ශ්‍රේණිය, හෝ ප්‍රශ්නාවලි පන්තිය).',
+    parentClassesUpdatedSuccess: 'ලියාපදිංචි පන්ති සාර්ථකව යාවත්කාලීන කරන ලදී!',
+    parentSelectAtLeastOneCategory: 'කරුණාකර අවම වශයෙන් එක් පන්ති කාණ්ඩයක්වත් තෝරන්න.',
+    parentEnrolledIn: 'ලියාපදිංචි වී ඇති පන්ති',
 
     // Teacher & Admin Dashboard
     teacherWelcome: 'සාදරයෙන් පිළිගනිමු',
