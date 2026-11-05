@@ -272,23 +272,28 @@ export default function EmbeddedLiveKitRoom({
         data-lk-theme="default"
         onDisconnected={onLeave}
         options={{
-          // Adaptive streaming: dynamically scales resolution to student internet bandwidth
-          adaptiveStream: true,
+          // Smart bandwidth optimization: always request highest quality for active speaker
+          adaptiveStream: {
+            pixelDensity: 'screen', // Crisp rendering on high-DPI Mac Retina / Mobile screens
+          },
           dynacast: true,
-          // Video quality tuned for live education
+          // High-Definition crisp video defaults for teaching & whiteboards
           videoCaptureDefaults: {
-            resolution: VideoPresets.h720.resolution,
+            resolution: VideoPresets.h1080.resolution,
+            deviceId: '',
           },
           publishDefaults: {
+            videoEncoding: VideoPresets.h1080.encoding,
             videoSimulcastLayers: [
+              VideoPresets.h1080,
               VideoPresets.h720,
               VideoPresets.h360,
-              VideoPresets.h180,
             ],
-            videoCodec: 'vp8', // Most widely compatible low-latency codec
+            videoCodec: 'vp8',
             audioPreset: {
-              maxBitrate: 32000, // Crystal clear speech without consuming extra bandwidth
+              maxBitrate: 48000, // Studio grade audio for clear teacher lecture
             },
+            screenShareEncoding: VideoPresets.h1080.encoding,
           },
         }}
         style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
