@@ -265,7 +265,7 @@ export default function EmbeddedLiveKitRoom({
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col">
       <LiveKitRoom
-        video={isTeacher}
+        video={true}
         audio={isTeacher}
         token={token}
         serverUrl={serverUrl}

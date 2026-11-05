@@ -453,10 +453,10 @@ async function getLiveToken(req, res) {
       at.addGrant({
         roomJoin: true,
         room: roomName,
-        canPublish: isTeacherOrAdmin, // ONLY teacher/admin can publish audio/video! Students are completely locked from unmuting!
+        canPublish: true, // Allows student camera publishing
         canPublishSources: isTeacherOrAdmin
           ? [TrackSource.CAMERA, TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE]
-          : [],
+          : [TrackSource.CAMERA], // Students can turn on video by default; mic is locked until teacher unmutes
         canPublishData: true, // Chat, Hand raise reactions, and control messages
         canSubscribe: true,
         roomAdmin: isTeacherOrAdmin, // Enables teacher host controls: Mute, unmute, manage room
