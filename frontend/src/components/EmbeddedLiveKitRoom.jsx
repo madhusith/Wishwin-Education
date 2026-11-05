@@ -272,26 +272,25 @@ export default function EmbeddedLiveKitRoom({
         data-lk-theme="default"
         onDisconnected={onLeave}
         options={{
-          // Smart bandwidth optimization: always request highest quality for active speaker
           adaptiveStream: {
-            pixelDensity: 'screen', // Crisp rendering on high-DPI Mac Retina / Mobile screens
+            pixelDensity: 'screen',
           },
           dynacast: true,
-          // High-Definition crisp video defaults for teaching & whiteboards
+          // 720p HD provides crisp whiteboard & face clarity with zero stutter or lag
           videoCaptureDefaults: {
-            resolution: VideoPresets.h1080.resolution,
+            resolution: VideoPresets.h720.resolution,
             deviceId: '',
           },
           publishDefaults: {
-            videoEncoding: VideoPresets.h1080.encoding,
+            videoEncoding: VideoPresets.h720.encoding,
             videoSimulcastLayers: [
-              VideoPresets.h1080,
               VideoPresets.h720,
               VideoPresets.h360,
+              VideoPresets.h180,
             ],
             videoCodec: 'vp8',
             audioPreset: {
-              maxBitrate: 48000, // Studio grade audio for clear teacher lecture
+              maxBitrate: 32000,
             },
             screenShareEncoding: VideoPresets.h1080.encoding,
           },
