@@ -19,6 +19,7 @@ import {
   Radio,
   BookOpen,
 } from 'lucide-react';
+import EmbeddedLiveKitRoom from '../../components/EmbeddedLiveKitRoom';
 import api from '../../services/api';
 
 export default function TeacherLiveClassesPage() {
@@ -47,6 +48,9 @@ export default function TeacherLiveClassesPage() {
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+
+  // Active In-LMS LiveKit Room
+  const [activeLiveRoom, setActiveLiveRoom] = useState(null);
 
   // Delete Dialog
   const [deleteDialog, setDeleteDialog] = useState({
@@ -182,6 +186,14 @@ export default function TeacherLiveClassesPage() {
       const res = await api.post('/live/token', { liveClassId: item.id });
       if (res.data?.meetingUrl) {
         window.open(res.data.meetingUrl, '_blank', 'noopener,noreferrer');
+      } else if (res.data?.token && res.data?.serverUrl) {
+        // Embed directly inside LMS
+        setActiveLiveRoom({
+          serverUrl: res.data.serverUrl,
+          token: res.data.token,
+          title: res.data.title || item.title,
+          className: res.data.className || item.class_name,
+        });
       } else if (res.data?.roomName) {
         alert(`Host LiveKit Room: ${res.data.roomName}\nToken ready. Launching session.`);
       }
@@ -592,6 +604,18 @@ export default function TeacherLiveClassesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Active In-LMS Live Classroom */}
+      {activeLiveRoom && (
+        <EmbeddedLiveKitRoom
+          serverUrl={activeLiveRoom.serverUrl}
+          token={activeLiveRoom.token}
+          title={activeLiveRoom.title}
+          className={activeLiveRoom.className}
+          isTeacher={true}
+          onLeave={() => setActiveLiveRoom(null)}
+        />
       )}
 
       {/* Delete Confirmation Dialog */}

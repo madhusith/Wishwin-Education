@@ -21,6 +21,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import api from '../../services/api';
+import EmbeddedLiveKitRoom from '../../components/EmbeddedLiveKitRoom';
 import { useAuth } from '../../hooks/useAuth';
 import { useLanguage } from '../../context/LanguageContext';
 import { formatValidDate } from '../../utils/dateUtils';
@@ -81,6 +82,7 @@ export default function StudentLiveClassesPage() {
         window.open(data.meetingUrl, '_blank', 'noopener,noreferrer');
         setActiveSession(null);
       }
+      // For LIVEKIT, activeSession and sessionTokenData remain set to render EmbeddedLiveKitRoom
     } catch (err) {
       console.error('Failed to join live session:', err);
       setJoinError(err.response?.data?.message || 'Could not join session. Please check your enrollment.');
@@ -303,81 +305,15 @@ export default function StudentLiveClassesPage() {
         )}
       </div>
 
-      {/* Live Classroom Viewer Modal (Step G3) */}
-      {activeSession && sessionTokenData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onClick={closeLiveRoom} />
-
-          <div className="relative bg-slate-900 text-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-800 z-10 animate-in fade-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-600 rounded-xl">
-                  <Radio className="w-5 h-5 text-white animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">
-                    {activeSession.title}
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    {activeSession.gradeName} &bull; {activeSession.className} &bull; Teacher {activeSession.teacherName}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={closeLiveRoom}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                aria-label="Exit live room"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Video Container Area */}
-            <div className="mt-5 aspect-video w-full bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center relative overflow-hidden p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center mb-4">
-                <Tv className="w-8 h-8" />
-              </div>
-
-              <h4 className="text-lg font-bold text-white">
-                Live Classroom Session
-              </h4>
-              <p className="text-xs text-slate-400 max-w-md mt-1">
-                Room: <code>{sessionTokenData.roomName}</code>
-              </p>
-
-              {sessionTokenData.isSandbox && (
-                <div className="mt-4 px-3 py-1.5 rounded-xl bg-blue-900/40 border border-blue-700/50 text-[11px] text-sky-200">
-                  ⚡ LiveKit Cloud provider connected. Token generated for student.
-                </div>
-              )}
-
-              {/* In-classroom mock controls */}
-              <div className="absolute bottom-4 flex items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-slate-700">
-                <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
-                  <Mic className="w-3.5 h-3.5" /> Mic Ready
-                </span>
-                <span className="w-1 h-1 rounded-full bg-slate-600" />
-                <span className="flex items-center gap-1.5 text-xs text-sky-400 font-semibold">
-                  <Volume2 className="w-3.5 h-3.5" /> Audio Connected
-                </span>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="mt-5 flex items-center justify-between pt-4 border-t border-slate-800 text-xs">
-              <span className="text-slate-400">
-                Status: <strong className="text-emerald-400">Enrolled & Connected</strong>
-              </span>
-              <button
-                onClick={closeLiveRoom}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition"
-              >
-                Leave Session
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Active In-LMS Live Classroom Session */}
+      {activeSession && sessionTokenData?.token && sessionTokenData?.serverUrl && (
+        <EmbeddedLiveKitRoom
+          serverUrl={sessionTokenData.serverUrl}
+          token={sessionTokenData.token}
+          title={activeSession.title}
+          className={`${activeSession.gradeName || ''} - ${activeSession.className || ''}`}
+          onLeave={closeLiveRoom}
+        />
       )}
     </DashboardLayout>
   );

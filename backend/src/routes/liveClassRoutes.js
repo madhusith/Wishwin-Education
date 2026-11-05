@@ -7,6 +7,7 @@ const {
   updateLiveClass,
   deleteLiveClass,
   getLiveToken,
+  updateParticipantMicPermission,
 } = require('../controllers/liveClassController');
 
 const router = express.Router();
@@ -25,5 +26,8 @@ router.post('/token', getLiveToken);
 router.post('/', requireRoles(['TEACHER', 'ADMIN']), createLiveClass);
 router.put('/:id', requireRoles(['TEACHER', 'ADMIN']), updateLiveClass);
 router.delete('/:id', requireRoles(['TEACHER', 'ADMIN']), deleteLiveClass);
+
+// Teacher Host Control: Grant/Revoke student microphone permission
+router.post('/participant-permission', requireRoles(['TEACHER', 'ADMIN']), updateParticipantMicPermission);
 
 module.exports = router;

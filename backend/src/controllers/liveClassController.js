@@ -1,4 +1,4 @@
-const { AccessToken } = require('livekit-server-sdk');
+const { AccessToken, TrackSource, RoomServiceClient } = require('livekit-server-sdk');
 const { pool } = require('../config/database');
 
 // GET /api/live-classes
@@ -448,12 +448,18 @@ async function getLiveToken(req, res) {
         name: participantName,
       });
 
+      const isTeacherOrAdmin = ['TEACHER', 'ADMIN'].includes(user.role);
+
       at.addGrant({
         roomJoin: true,
         room: roomName,
-        canPublish: ['TEACHER', 'ADMIN'].includes(user.role),
-        canPublishData: true,
+        canPublish: isTeacherOrAdmin, // ONLY teacher/admin can publish audio/video! Students are completely locked from unmuting!
+        canPublishSources: isTeacherOrAdmin
+          ? [TrackSource.CAMERA, TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE]
+          : [],
+        canPublishData: true, // Chat, Hand raise reactions, and control messages
         canSubscribe: true,
+        roomAdmin: isTeacherOrAdmin, // Enables teacher host controls: Mute, unmute, manage room
       });
 
       const token = await at.toJwt();
@@ -490,6 +496,50 @@ async function getLiveToken(req, res) {
   }
 }
 
+// POST /api/live-classes/participant-permission (Teacher Host Control to Allow/Revoke student microphone)
+async function updateParticipantMicPermission(req, res) {
+  try {
+    const { roomName, identity, allowMic } = req.body;
+    if (!roomName || !identity) {
+      return res.status(400).json({ success: false, message: 'roomName and identity are required.' });
+    }
+
+    const livekitUrl = process.env.LIVEKIT_URL || 'wss://demo.livekit.cloud';
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      return res.status(400).json({ success: false, message: 'LiveKit API keys not configured.' });
+    }
+
+    const host = livekitUrl.replace('wss://', 'https://');
+    const roomService = new RoomServiceClient(host, apiKey, apiSecret);
+
+    // Update participant permissions dynamically (allowing or stripping mic publishing rights)
+    await roomService.updateParticipant(roomName, identity, {
+      permission: {
+        canPublish: Boolean(allowMic),
+        canPublishSources: allowMic ? [TrackSource.MICROPHONE] : [],
+        canPublishData: true,
+        canSubscribe: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: allowMic ? `Microphone permission granted to ${identity}.` : `Microphone permission revoked for ${identity}.`,
+      identity,
+      allowMic: Boolean(allowMic),
+    });
+  } catch (error) {
+    console.error('Error updating participant mic permission:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to update participant permission.',
+    });
+  }
+}
+
 module.exports = {
   getLiveClasses,
   getLiveClassById,
@@ -497,4 +547,5 @@ module.exports = {
   updateLiveClass,
   deleteLiveClass,
   getLiveToken,
+  updateParticipantMicPermission,
 };
