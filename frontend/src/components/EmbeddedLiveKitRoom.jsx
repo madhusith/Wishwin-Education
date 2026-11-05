@@ -8,6 +8,7 @@ import {
   useRoomContext,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
+import { VideoPresets } from 'livekit-client';
 import { X, Radio, Users, Mic, MicOff, Shield, User, Volume2, VolumeX } from 'lucide-react';
 import api from '../services/api';
 
@@ -270,6 +271,26 @@ export default function EmbeddedLiveKitRoom({
         serverUrl={serverUrl}
         data-lk-theme="default"
         onDisconnected={onLeave}
+        options={{
+          // Adaptive streaming: dynamically scales resolution to student internet bandwidth
+          adaptiveStream: true,
+          dynacast: true,
+          // Video quality tuned for live education
+          videoCaptureDefaults: {
+            resolution: VideoPresets.h720.resolution,
+          },
+          publishDefaults: {
+            videoSimulcastLayers: [
+              VideoPresets.h720,
+              VideoPresets.h360,
+              VideoPresets.h180,
+            ],
+            videoCodec: 'vp8', // Most widely compatible low-latency codec
+            audioPreset: {
+              maxBitrate: 32000, // Crystal clear speech without consuming extra bandwidth
+            },
+          },
+        }}
         style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
       >
         {/* Custom Header with Live Participant Count and Roster Panel */}
