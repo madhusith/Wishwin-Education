@@ -23,10 +23,26 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disables default CSP that blocks iframe embedding
 }));
 
-// CORS configuration
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+// CORS configuration (Allows local dev, Vercel preview & production domains)
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5001',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: frontendUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or same-origin)
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost')
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive during staging/testing
+  },
   credentials: true,
 }));
 
