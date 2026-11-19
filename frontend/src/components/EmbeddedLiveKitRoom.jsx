@@ -108,34 +108,40 @@ function ClassroomHeader({
 
   return (
     <>
-      <header className="min-h-14 px-2.5 sm:px-5 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-30">
+      <header
+        className="min-h-11 sm:min-h-14 px-2.5 sm:px-5 py-1.5 sm:py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 sm:gap-4 shrink-0 z-30"
+        style={{
+          paddingLeft: 'max(0.625rem, env(safe-area-inset-left))',
+          paddingRight: 'max(0.625rem, env(safe-area-inset-right))',
+        }}
+      >
         {/* Left: Back Button, Live Status & Class Info */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           {/* Back Button */}
           <button
             type="button"
             onClick={onLeave}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer shrink-0"
             title="Back to Live Classes"
             aria-label="Back to Live Classes"
           >
-            <ArrowLeft className="w-4 h-4 text-sky-400 shrink-0" />
-            <span className="hidden xs:inline sm:inline">Back</span>
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
+            <span>Back</span>
           </button>
 
           {/* Live Indicator Badge */}
-          <span className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-red-600/20 text-red-400 border border-red-500/30 animate-pulse shrink-0">
+          <span className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-red-600/20 text-red-400 border border-red-500/30 animate-pulse shrink-0">
             <Radio className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 shrink-0" />
             <span>LIVE</span>
           </span>
 
           {/* Title & Class Name */}
           <div className="min-w-0 flex-1">
-            <h2 className="text-xs sm:text-sm font-bold text-white truncate">
+            <h2 className="text-xs sm:text-sm font-bold text-white truncate leading-tight">
               {title || 'Interactive Live Session'}
             </h2>
             {className && (
-              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate hidden xs:block sm:block">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate hidden sm:block leading-tight">
                 {className}
               </p>
             )}
@@ -148,7 +154,7 @@ function ClassroomHeader({
           <button
             type="button"
             onClick={() => setShowRoster((prev) => !prev)}
-            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
               showRoster
                 ? 'bg-blue-600 text-white border-blue-500 shadow-lg'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
@@ -156,7 +162,7 @@ function ClassroomHeader({
             title="View participants list & host controls"
             aria-label="Toggle participants list"
           >
-            <Users className="w-4 h-4 text-sky-400 shrink-0" />
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
             <span className="hidden md:inline">Participants</span>
             <span className="px-1.5 py-0.2 rounded-md bg-slate-950/50 text-[11px] font-extrabold text-sky-300">
               {participants.length}
@@ -167,7 +173,7 @@ function ClassroomHeader({
           <button
             type="button"
             onClick={onToggleFullscreen}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
               isFullscreen
                 ? 'bg-indigo-600/30 text-indigo-200 border-indigo-500/50 hover:bg-indigo-600/50 hover:text-white'
                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
@@ -177,12 +183,12 @@ function ClassroomHeader({
           >
             {isFullscreen ? (
               <>
-                <Minimize2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400 shrink-0" />
                 <span className="hidden lg:inline">Exit Full Screen</span>
               </>
             ) : (
               <>
-                <Maximize2 className="w-4 h-4 text-sky-400 shrink-0" />
+                <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
                 <span className="hidden lg:inline">Full Screen</span>
               </>
             )}
@@ -192,10 +198,10 @@ function ClassroomHeader({
           <button
             type="button"
             onClick={onLeave}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition cursor-pointer"
             title={isTeacher ? 'End Session' : 'Leave Room'}
           >
-            <X className="w-4 h-4 shrink-0" />
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span className="hidden sm:inline">{isTeacher ? 'End Session' : 'Leave Room'}</span>
           </button>
         </div>
@@ -328,6 +334,40 @@ function ClassroomHeader({
   );
 }
 
+// Auto-Focus Teacher Video Track so Teacher/Whiteboard is large by default
+function AutoFocusTeacher() {
+  const participants = useParticipants();
+  const hasAutoFocused = useRef(false);
+
+  useEffect(() => {
+    if (hasAutoFocused.current) return;
+
+    // Wait briefly for video tiles to render, then auto-click the focus button on the teacher tile if still in grid mode
+    const timer = setTimeout(() => {
+      const inFocusLayout = document.querySelector('.lk-focus-layout');
+      if (inFocusLayout) {
+        hasAutoFocused.current = true;
+        return;
+      }
+
+      const tiles = document.querySelectorAll('.lk-participant-tile');
+      for (const tile of tiles) {
+        const hasVideo = tile.querySelector('video');
+        const focusBtn = tile.querySelector('.lk-focus-toggle-button');
+        if (hasVideo && focusBtn) {
+          focusBtn.click();
+          hasAutoFocused.current = true;
+          break;
+        }
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [participants.length]);
+
+  return null;
+}
+
 // Student Microphone Auto-Lock Controller
 function StudentMicLock() {
   const { localParticipant } = useLocalParticipant();
@@ -385,14 +425,25 @@ export default function EmbeddedLiveKitRoom({
         const el = containerRef.current || document.documentElement;
         if (el.requestFullscreen) {
           await el.requestFullscreen();
+          return;
         } else if (el.webkitRequestFullscreen) {
           await el.webkitRequestFullscreen();
+          return;
         } else if (el.msRequestFullscreen) {
           await el.msRequestFullscreen();
-        } else {
-          // Fallback toggle for browsers without Fullscreen API
-          setIsFullscreen((prev) => !prev);
+          return;
         }
+
+        // iOS Safari iPhone fallback: trigger native fullscreen on the active teacher/focused video element
+        const videoEl =
+          el.querySelector('.lk-focus-layout > .lk-participant-tile video') ||
+          el.querySelector('.lk-participant-media-video');
+        if (videoEl && videoEl.webkitEnterFullscreen) {
+          videoEl.webkitEnterFullscreen();
+          return;
+        }
+
+        setIsFullscreen((prev) => !prev);
       } else {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
@@ -406,6 +457,16 @@ export default function EmbeddedLiveKitRoom({
       }
     } catch (err) {
       console.warn('Fullscreen toggle fallback:', err);
+      // Try video element fullscreen on iOS if container requestFullscreen threw
+      const videoEl =
+        containerRef.current?.querySelector('.lk-focus-layout > .lk-participant-tile video') ||
+        containerRef.current?.querySelector('.lk-participant-media-video');
+      if (videoEl && videoEl.webkitEnterFullscreen) {
+        try {
+          videoEl.webkitEnterFullscreen();
+          return;
+        } catch (e) {}
+      }
       setIsFullscreen((prev) => !prev);
     }
   }, []);
@@ -490,27 +551,13 @@ export default function EmbeddedLiveKitRoom({
 
         {/* Lock student microphone on join */}
         {!isTeacher && <StudentMicLock />}
+        {/* Automatically focus teacher's active video stream */}
+        <AutoFocusTeacher />
 
         {/* Main LiveKit Embedded Video Area */}
         <div className="flex-1 w-full min-h-0 relative overflow-hidden bg-slate-950 flex flex-col">
           <VideoConference />
           <RoomAudioRenderer />
-
-          {/* Floating Quick Controls Overlay (Bottom-Left) for easy Back / Full Screen access */}
-          <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 pointer-events-auto sm:hidden">
-            <button
-              type="button"
-              onClick={handleToggleFullscreen}
-              className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700/80 backdrop-blur-md shadow-lg transition cursor-pointer"
-              title={isFullscreen ? 'Exit Full Screen' : 'Full Screen'}
-            >
-              {isFullscreen ? (
-                <Minimize2 className="w-4 h-4 text-indigo-400" />
-              ) : (
-                <Maximize2 className="w-4 h-4 text-sky-400" />
-              )}
-            </button>
-          </div>
         </div>
       </LiveKitRoom>
     </div>

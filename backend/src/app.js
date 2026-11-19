@@ -43,7 +43,10 @@ app.use(cors({
     }
     return callback(null, true); // Permissive during staging/testing
   },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true,
+  optionsSuccessStatus: 204,
 }));
 
 // Body parsing middleware

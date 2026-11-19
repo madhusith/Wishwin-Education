@@ -58,6 +58,7 @@ body {
   max-width: 100% !important;
   max-height: 100% !important;
   overflow: hidden !important;
+  background-color: #020617 !important;
 }
 
 .lk-video-conference-inner {
@@ -66,12 +67,15 @@ body {
   min-width: 0 !important;
   min-height: 0 !important;
   overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .lk-grid-layout-wrapper,
 .lk-focus-layout-wrapper {
   width: 100% !important;
-  height: calc(100% - var(--lk-control-bar-height)) !important;
+  flex: 1 1 0% !important;
+  height: auto !important;
   min-height: 0 !important;
   overflow: hidden !important;
 }
@@ -82,25 +86,67 @@ body {
   height: 100% !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
+  padding: var(--lk-grid-gap) !important;
+}
+
+/* Focus layout: Side-by-side on Desktop & Mobile Landscape (Main stage on left, thumbnail sidebar on right) */
+.lk-focus-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 210px !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: var(--lk-grid-gap) !important;
+}
+
+.lk-focus-layout > .lk-carousel {
+  order: 2 !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+}
+
+.lk-focus-layout > .lk-participant-tile {
+  order: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  background-color: #000 !important;
 }
 
 .lk-participant-tile {
   min-width: 0 !important;
   min-height: 0 !important;
   border-radius: 0.75rem !important;
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Keep teacher/whiteboard video fully visible inside focused tile without cropping */
+.lk-focus-layout > .lk-participant-tile .lk-participant-media-video {
+  object-fit: contain !important;
+  background-color: #000 !important;
+}
+
+/* Always show expand/pin focus button on touch devices & mobile */
+.lk-participant-tile .lk-focus-toggle-button {
+  opacity: 0.9 !important;
+  z-index: 10 !important;
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 0.35rem !important;
+  border-radius: 0.5rem !important;
 }
 
 /* Control bar responsive wrapping & sizing */
 .lk-control-bar {
   display: flex !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.375rem !important;
-  padding: 0.5rem 0.75rem !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem max(0.75rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
   min-height: var(--lk-control-bar-height) !important;
-  max-height: none !important;
   height: auto !important;
+  flex-shrink: 0 !important;
   background-color: #0f172a !important;
   border-top: 1px solid #1e293b !important;
   z-index: 20;
@@ -115,34 +161,41 @@ body {
   border-radius: 0.625rem !important;
 }
 
+/* Keep Start Audio button inline inside control bar instead of floating over video */
+.lk-start-audio-button {
+  position: static !important;
+  transform: none !important;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
 /* Chat panel responsive width */
 .lk-chat {
-  width: clamp(260px, 32vw, 380px) !important;
+  width: clamp(260px, 32vw, 360px) !important;
   max-width: 100% !important;
   height: 100% !important;
   z-index: 30;
 }
 
-/* Tablet & Mobile breakpoints for LiveKit */
-@media (max-width: 1024px) {
-  .lk-focus-layout {
-    grid-template-columns: 1fr 3.5fr !important;
-  }
-}
-
-@media (max-width: 768px) {
+/* Portrait Phones & Portrait Tablets: Stack main video on top, thumbnail strip at bottom */
+@media (max-width: 768px) and (orientation: portrait) {
   [data-lk-theme] {
-    --lk-control-bar-height: 60px;
+    --lk-control-bar-height: 54px;
     --lk-grid-gap: 0.375rem;
   }
 
   .lk-focus-layout {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: 1fr 110px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) 100px !important;
   }
 
-  .lk-carousel {
+  .lk-focus-layout > .lk-participant-tile {
     order: 1 !important;
+  }
+
+  .lk-focus-layout > .lk-carousel {
+    order: 2 !important;
     flex-direction: row !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -150,12 +203,60 @@ body {
     height: 100% !important;
   }
 
-  .lk-carousel > * {
+  .lk-focus-layout > .lk-carousel > * {
     height: 100% !important;
     width: auto !important;
     aspect-ratio: 16 / 10 !important;
   }
+}
 
+/* Mobile Landscape (e.g. iPhone/Android turned sideways): Maximize vertical video height! */
+@media (max-height: 520px) and (orientation: landscape) {
+  [data-lk-theme] {
+    --lk-control-bar-height: 44px;
+    --lk-grid-gap: 0.35rem;
+  }
+
+  .lk-focus-layout {
+    grid-template-columns: minmax(0, 1fr) 150px !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+  }
+
+  .lk-focus-layout > .lk-participant-tile {
+    order: 1 !important;
+  }
+
+  .lk-focus-layout > .lk-carousel {
+    order: 2 !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+
+  .lk-focus-layout > .lk-carousel > * {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .lk-control-bar {
+    padding: 0.25rem max(0.75rem, env(safe-area-inset-right)) max(0.25rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left)) !important;
+    min-height: 44px !important;
+  }
+
+  .lk-control-bar .lk-button,
+  .lk-control-bar .lk-disconnect-button,
+  .lk-control-bar .lk-chat-toggle,
+  .lk-control-bar .lk-start-audio-button {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Small Screen General Overrides (Chat & Menus) */
+@media (max-width: 768px) {
   .lk-chat {
     position: absolute !important;
     top: 0 !important;
@@ -164,18 +265,6 @@ body {
     left: 0 !important;
     width: 100% !important;
     height: auto !important;
-  }
-
-  .lk-control-bar {
-    padding: 0.375rem 0.5rem !important;
-    gap: 0.25rem !important;
-  }
-
-  .lk-control-bar .lk-button,
-  .lk-control-bar .lk-disconnect-button,
-  .lk-control-bar .lk-chat-toggle {
-    padding: 0.45rem 0.6rem !important;
-    font-size: 0.75rem !important;
   }
 
   .lk-device-menu {
@@ -188,9 +277,5 @@ body {
 @media (max-width: 480px) {
   .lk-control-bar .lk-button-group-menu {
     display: none !important;
-  }
-
-  .lk-focus-layout {
-    grid-template-rows: 1fr 96px !important;
   }
 }
