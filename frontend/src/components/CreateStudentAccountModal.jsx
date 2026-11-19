@@ -282,7 +282,7 @@ export default function CreateStudentAccountModal({ isOpen, onClose, onSuccess }
               </div>
 
               {/* Child First & Last Name */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                     First Name *
@@ -312,7 +312,7 @@ export default function CreateStudentAccountModal({ isOpen, onClose, onSuccess }
               </div>
 
               {/* Child Username & Password */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
                     {t('parentChildUsername', 'Child Username')} *

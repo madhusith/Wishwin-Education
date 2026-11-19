@@ -85,10 +85,10 @@ export default function StudentDashboard() {
       />
 
       {/* Monthly Class Access & Status Banner (No Renew Button for Students) */}
-      <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-3.5">
+      <div className="mb-6 p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-xs">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 min-w-0">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border ${
               currentStatus === 'ACTIVE'
                 ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                 : currentStatus === 'PAYMENT_NEEDED'
@@ -96,11 +96,11 @@ export default function StudentDashboard() {
                 : 'bg-rose-50 text-rose-600 border-rose-200'
             }`}
           >
-            <CreditCard className="w-5 h-5" />
+            <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-slate-900 text-sm">Monthly Class Pass:</span>
+              <span className="font-bold text-slate-900 text-xs sm:text-sm">Monthly Class Pass:</span>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                   currentStatus === 'ACTIVE'
@@ -115,7 +115,7 @@ export default function StudentDashboard() {
                 {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
               {paymentStatus?.validUntil ? (
                 <>
                   Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}

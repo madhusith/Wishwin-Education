@@ -232,7 +232,7 @@ export default function ManageStudentClassesModal({
             </div>
 
             {/* Footer Actions */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={onClose}
@@ -242,7 +242,7 @@ export default function ManageStudentClassesModal({
                 Cancel
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="submit"
                   disabled={submitting}

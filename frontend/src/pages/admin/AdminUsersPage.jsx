@@ -311,11 +311,11 @@ export default function AdminUsersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="flex-1 sm:flex-initial px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
           >
             <option value="">All Roles</option>
             <option value="STUDENT">Students</option>
@@ -327,7 +327,7 @@ export default function AdminUsersPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="flex-1 sm:flex-initial px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
           >
             <option value="">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -654,13 +654,13 @@ export default function AdminUsersPage() {
 
       {/* Create / Edit User Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-4">
           <div
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
             onClick={() => !formSubmitting && setModalOpen(false)}
           />
 
-          <div className="relative bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 z-10 animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative bg-white rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto p-5 sm:p-6 shadow-2xl border border-slate-100 z-10 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-base font-bold text-slate-900">
                 {editingUser ? 'Edit User Details' : 'Create New User Account'}
@@ -682,7 +682,7 @@ export default function AdminUsersPage() {
             )}
 
             <form onSubmit={handleFormSubmit} className="mt-4 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     First Name *
@@ -722,7 +722,7 @@ export default function AdminUsersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Phone Number

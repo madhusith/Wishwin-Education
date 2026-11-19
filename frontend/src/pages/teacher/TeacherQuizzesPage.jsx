@@ -612,7 +612,7 @@ export default function TeacherQuizzesPage() {
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Quiz Format Option <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, quizType: 'IN_BUILD' })}
@@ -672,7 +672,7 @@ export default function TeacherQuizzesPage() {
               {/* In-Built Questions Editor */}
               {(formData.quizType === 'IN_BUILD' || formData.quizType === 'BOTH') && (
                 <div className="space-y-3 pt-2 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h4 className="font-semibold text-xs text-slate-800">
                         In-Built MCQ Questions ({formData.questions.length})
@@ -681,7 +681,7 @@ export default function TeacherQuizzesPage() {
                         Select the radio button for the correct answer.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <div className="flex items-center gap-1 text-xs text-slate-600">
                         <label className="text-[11px]">Timer:</label>
                         <input

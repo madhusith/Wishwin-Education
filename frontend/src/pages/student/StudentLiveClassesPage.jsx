@@ -120,10 +120,10 @@ export default function StudentLiveClassesPage() {
         const validDateFormatted = formatValidDate(paymentStatus?.validUntil);
 
         return (
-          <div className="mb-6 p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-3.5">
+          <div className="mb-6 p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-xs">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border ${
                   currentStatus === 'ACTIVE'
                     ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                     : currentStatus === 'PAYMENT_NEEDED'
@@ -131,11 +131,11 @@ export default function StudentLiveClassesPage() {
                     : 'bg-rose-50 text-rose-600 border-rose-200'
                 }`}
               >
-                <CreditCard className="w-5 h-5" />
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-900 text-sm">Monthly Class Pass:</span>
+                  <span className="font-bold text-slate-900 text-xs sm:text-sm">Monthly Class Pass:</span>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                       currentStatus === 'ACTIVE'
@@ -150,7 +150,7 @@ export default function StudentLiveClassesPage() {
                     {currentStatus === 'PAYMENT_OVERDUE' && t('statusPaymentOverdue', 'Payment Overdue')}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                   {paymentStatus?.validUntil ? (
                     <>
                       Valid Date: <strong className="text-slate-800 font-semibold">{validDateFormatted}</strong>{' '}
@@ -167,6 +167,10 @@ export default function StudentLiveClassesPage() {
         );
       })()}
 
+      {joinError && (
+        <ErrorMessage message={joinError} onRetry={() => setJoinError(null)} className="mb-4" />
+      )}
+
       {/* LIVE NOW SPOTLIGHT (if active) */}
       {liveNow.length > 0 && (
         <div className="mb-6 space-y-4">
@@ -182,10 +186,10 @@ export default function StudentLiveClassesPage() {
             {liveNow.map((item) => (
               <div
                 key={item.id}
-                className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white rounded-2xl p-6 shadow-lg shadow-red-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-5"
+                className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white rounded-2xl p-4 sm:p-6 shadow-lg shadow-red-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-5"
               >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-2 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-red-700 tracking-wider">
                       🔴 LIVE STREAMING
                     </span>
@@ -194,17 +198,17 @@ export default function StudentLiveClassesPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-white leading-tight">
+                  <h3 className="text-lg sm:text-xl font-bold text-white leading-tight break-words">
                     {item.title}
                   </h3>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-white/90">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-white/90">
                     <span className="flex items-center gap-1.5 font-medium">
-                      <GraduationCap className="w-4 h-4 text-white/80" />
+                      <GraduationCap className="w-4 h-4 text-white/80 shrink-0" />
                       Teacher: {item.teacherName}
                     </span>
                     <span className="flex items-center gap-1.5 font-medium">
-                      <Clock className="w-4 h-4 text-white/80" />
+                      <Clock className="w-4 h-4 text-white/80 shrink-0" />
                       {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
                     </span>
                   </div>
@@ -212,10 +216,11 @@ export default function StudentLiveClassesPage() {
 
                 <button
                   onClick={() => handleJoinClass(item)}
-                  className="px-6 py-3 rounded-xl bg-white text-red-600 hover:bg-red-50 font-extrabold text-sm shadow-md hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
+                  disabled={joining}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white text-red-600 hover:bg-red-50 font-extrabold text-sm shadow-md sm:hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer disabled:opacity-60"
                 >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>Join Class Now</span>
+                  <Play className="w-4 h-4 fill-current shrink-0" />
+                  <span>{joining && activeSession?.id === item.id ? 'Joining...' : 'Join Class Now'}</span>
                 </button>
               </div>
             ))}
