@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
 const defaultBaseURL = isProduction
-  ? 'https://illustration-manufacturing-strategic-retained.trycloudflare.com/api'
+  ? 'https://assume-address-fusion-classical.trycloudflare.com/api'
   : 'http://localhost:5001/api';
 
 const api = axios.create({
