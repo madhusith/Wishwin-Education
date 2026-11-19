@@ -41,7 +41,9 @@ export function getReceiptFileUrl(url) {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   const backendBase =
-    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5001';
+    api.defaults.baseURL?.replace('/api', '') ||
+    import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ||
+    'http://localhost:5001';
   return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 

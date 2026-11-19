@@ -217,6 +217,28 @@ body {
     --lk-grid-gap: 0.35rem;
   }
 
+  .lk-grid-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0.25rem !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+
+  .lk-grid-layout > .lk-participant-tile {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: calc(100vh - var(--lk-control-bar-height) - 45px) !important;
+    aspect-ratio: 16 / 9 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
   .lk-focus-layout {
     grid-template-columns: minmax(0, 1fr) 150px !important;
     grid-template-rows: minmax(0, 1fr) !important;
