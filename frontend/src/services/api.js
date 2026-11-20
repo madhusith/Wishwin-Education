@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
 const defaultBaseURL = isProduction
-  ? 'https://polymer-their-size-plain.trycloudflare.com/api'
+  ? 'https://res-portrait-outstanding-documentation.trycloudflare.com/api'
   : 'http://localhost:5001/api';
 
 const api = axios.create({
